@@ -9,7 +9,7 @@ class Merlion
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 
-		def initialize(opts = {})
+		def initialize
 		end
 		
 		def initialize_from_opts(opts = {})
@@ -54,10 +54,9 @@ class Merlion
 
 		def create_player(index, type = Merlion::Player, name = nil)
 			i = index
-			opts = {stack: stacks[i], seat: i, game: self, name: (names || "Player #{i}")}
+			opts = {stack: stacks[i], seat: i, game: self, name: (names[i] || "Player #{i}")}
 			return type.new(opts)
 		end
-
 
 		# clone this object, but clone the players too
 		def duplicate
@@ -233,7 +232,7 @@ class Merlion
 			count = 0
 			loop do
 				seat = seat + 1
-				seat = 0 if seat > (@players.size - 1)
+				seat = 0 if seat > (num_players - 1)
 				if exclude_out
 					count += 1 unless players[seat].out?
 				else
@@ -370,5 +369,7 @@ class Merlion
 		def minimum_bet
 			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
 		end
+
+		alias_method :act, :process_move
 	end
 end

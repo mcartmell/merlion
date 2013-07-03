@@ -14,7 +14,6 @@ class Merlion
 			@seat = opts[:seat]
 			@out = false
 			@pe = PokerEval.new
-			rewind!
 		end
 
 		def hole_str
@@ -33,6 +32,10 @@ class Merlion
 			if @stack == 0
 				@out = true
 			end
+		end
+
+		def hand_started
+			rewind!
 		end
 
 		def out?
