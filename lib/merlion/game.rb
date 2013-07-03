@@ -5,7 +5,7 @@ require 'pokereval'
 class Merlion
 	class Game
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id
-		attr_reader :stacks, :names, :meerkat_server, :meerkat
+		attr_reader :stacks, :names
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 
@@ -14,7 +14,6 @@ class Merlion
 		
 		def initialize_from_opts(opts = {})
 			default = {
-				meerkat: true,
 			}
 			opts = default.merge(opts)
 
@@ -78,10 +77,6 @@ class Merlion
 				break unless players[dealer].out?
 			end
 			return dealer
-		end
-
-		def meerkat?
-			@meerkat
 		end
 
 		def last_player

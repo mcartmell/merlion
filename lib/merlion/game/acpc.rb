@@ -119,7 +119,15 @@ class Merlion
 			end
 
 			def hand_finished
-				#	wait for END_GAME
+				loop do
+					line = @socket.gets
+					interpret_acpc_matchstate(line) # update cards and things
+					if line.chop == '#END_HAND'
+						# now the hand has really finished
+						super
+						break
+					end
+				end
 			end
 		end
 	end
