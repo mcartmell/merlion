@@ -28,6 +28,7 @@ class Merlion
 			@folded = false
 			@acted = false
 			@put_in_this_round = 0
+			@hole_cards = nil
 			@seats_from_dealer = @game.active_seats_from_dealer(self.seat)
 			if @stack == 0
 				@out = true

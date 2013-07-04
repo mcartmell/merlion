@@ -106,6 +106,7 @@ class Merlion
 			self.pot = 0
 			self.current_bet = 0
 			self.current_player = first_to_act
+			self.board_cards = nil
 			self.last_player_to_act = nil
 			players.each do |p|
 				p.hand_started
@@ -246,22 +247,22 @@ class Merlion
 		end
 
 		def player_finished
+			debug("Player finished")
 			self.last_player_to_act = current_player
-			
-			#puts "#{current_player} ACTED, NEXT SEAT IS #{next_seat}"
+
+			if num_active_players == 1
+				hand_finished
+			end
+
 			if (next_player = next_player_to_act(next_seat))
-				#puts "NEXT PLAYER IS #{next_player}"
 				self.current_player = next_player
 			else
-				if num_active_players == 1
-					hand_finished
-				else
-					next_stage
-				end
+				next_stage
 			end
 		end
 
 		def has_got_enough_cards_for_stage?
+			return nil unless board_cards
 			case stage
 				when :preflop
 					return num_board_cards == 0
@@ -275,6 +276,7 @@ class Merlion
 		end
 
 		def next_stage
+			debug("Getting to next stage")
 			if (stage == :river)
 				self.current_player = nil
 				hand_finished
@@ -299,6 +301,7 @@ class Merlion
 
 		def hand_finished
 			pe = PokerEval.new
+			debug("Hand finished")
 			# one winner, reward them
 			if (num_active_players == 1)
 				winner = @players.find{|p| p.active?}

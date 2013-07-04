@@ -73,12 +73,6 @@ class Merlion
 				end
 			end
 
-			def start_hand
-				super
-				if player_to_act.respond_to?(:get_move)
-				end
-			end
-
 			def create_players
 				num_players.times do |i|
 					player_class = Merlion::Player
