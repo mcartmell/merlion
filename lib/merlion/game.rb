@@ -251,7 +251,7 @@ class Merlion
 			self.last_player_to_act = current_player
 
 			if num_active_players == 1
-				hand_finished
+				return hand_finished
 			end
 
 			if (next_player = next_player_to_act(next_seat))
@@ -276,7 +276,6 @@ class Merlion
 		end
 
 		def next_stage
-			debug("Getting to next stage")
 			if (stage == :river)
 				self.current_player = nil
 				hand_finished
