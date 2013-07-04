@@ -1,8 +1,10 @@
 require 'socket'
 require 'merlion/game'
+require 'merlion/log'
 class Merlion
 	class Game
 		class ACPC < Merlion::Game
+			include Merlion::Log
 
 			attr_reader :socket
 			attr_reader :bot_player
@@ -18,9 +20,8 @@ class Merlion
 				defaults = {
 				}
 				opts = read_initial_state
-				p opts
 				opts = defaults.merge(opts)
-				self.dealer = opts[:button_seat]
+				opts[:dealer] = opts[:button_seat]
 				initialize_from_opts(opts)
 				start_hand
 			end
@@ -33,13 +34,20 @@ class Merlion
 			def set_bot_seat(seats_from_dealer)
 				return if self.bot_seat # already set
 				self.bot_seat = next_seat(self.dealer, seats_from_dealer, true)
-				players[self.bot_seat] = create_player(self.bot_seat, Merlion::Player)
+				bot = create_player(self.bot_seat, Merlion::Bot)
+				bot.rewind!
+				players[self.bot_seat] = bot
 			end
 
 			def socket_get
-				line = @socket.gets
-				puts line
+				line = @socket.gets.chomp
+				debug("<<< " + line)
 				return line
+			end
+
+			def socket_put(str)
+				debug(">>> " + str)
+				@socket.puts str
 			end
 
 			def read_initial_state
@@ -65,6 +73,12 @@ class Merlion
 				end
 			end
 
+			def start_hand
+				super
+				if player_to_act.respond_to?(:get_move)
+				end
+			end
+
 			def create_players
 				num_players.times do |i|
 					player_class = Merlion::Player
@@ -75,8 +89,14 @@ class Merlion
 			def get_next_move
 				if player_to_act.respond_to?(:get_move)
 					# get the move, write it to the server and continue reading the gamestate
-					move = player_to_act.get_move
-					@socket.puts move
+					move = nil
+					loop do
+						move = player_to_act.get_move
+						break if move
+						# in case player doesn't have enough info to move, try reading matchstate
+						read_acpc_matchstate
+					end
+					socket_put(action_str(move))
 				end
 				return read_next_move
 			end
@@ -94,7 +114,7 @@ class Merlion
 				if (m = mstr.match(/MATCHSTATE:(\d+):(\d+):([^:]*):([^:]*)/))
 					seats_from_dealer = m[1].to_i + 1
 					set_bot_seat(seats_from_dealer)
-					game_id = m[2]
+					self.game_id = m[2]
 					betting = m[3]
 					cards = m[4]
 
@@ -112,8 +132,13 @@ class Merlion
 					end
 					self.board_cards = board_cards.split('/').join('')
 
+					last_act_char = betting[-1,1]
 					# then process betting rounds
-					last_action = betting[-1,1]
+					begin
+						last_action = action(last_act_char)
+					rescue
+						return nil
+					end
 
 					return {
 						game_id: game_id,
@@ -128,7 +153,7 @@ class Merlion
 				loop do
 					line = socket_get
 					interpret_acpc_matchstate(line) # update cards and things
-					if line.chop == '#END_HAND'
+					if line == '#END_HAND'
 						# now the hand has really finished
 						super
 						break

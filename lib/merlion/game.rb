@@ -1,15 +1,35 @@
 require 'merlion/player'
 require 'merlion/bot'
+require 'merlion/log'
 require 'pokereval'
 
 class Merlion
 	class Game
+		include Merlion::Log
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id
 		attr_reader :stacks, :names
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
+		ActionMap = {
+			'f' => :fold,
+			'c' => :call,
+			'r' => :raise
+		}
 
-		def initialize
+		def action(str)
+			act = ActionMap[str]
+			unless act
+				raise "Unknown action '#{str}'"
+			end
+			return act
+		end
+
+		def action_str(sym)
+			act = ActionMap.invert[sym]
+			unless act
+				raise "Unknown action '#{sym}'"
+			end
+			return act
 		end
 		
 		def initialize_from_opts(opts = {})
@@ -45,7 +65,6 @@ class Merlion
 			loop do
 				move = get_next_move
 				process_move(move)
-				resolve_state
 			end
 		end
 
@@ -95,17 +114,6 @@ class Merlion
 			act('big_blind')
 		end
 
-		def process_acpc_line(line)
-			if line[0] == '#'
-				if line.chop == '#END_HAND'
-					hand_finished
-				end
-			else
-				return read_from_matchstate(line)
-			end
-			return false
-		end
-
 		def print_players
 			players.each_with_index do |p, i|
 				msg = i.to_s
@@ -120,56 +128,6 @@ class Merlion
 
 		def all_cards_used
 			return board_cards + (players.map{|p| p.hole_cards}.join(''))
-		end
-
-		def read_from_matchstate(mstr)
-			start_hand
-			mstr.chomp!
-			if (m = mstr.match(/MATCHSTATE:(\d+):(\d+):([^:]*):([^:]*)/))
-				seats_from_dealer = m[1].to_i + 1
-				self.set_bot_player(seats_from_dealer)
-				self.game_id = m[2]
-				betting = m[3]
-				cards = m[4]
-
-				# get cards first
-				cards = cards.partition('/')
-				hole_cards = cards[0]
-				board_cards = cards[2]
-				hole_cards.split('|').each_with_index do |elem, i|
-					# index is seat relative to dealer
-					pseat = next_notout_seat(@dealer, i + 1)
-					player = @players[pseat]
-					player.hole_cards = elem || ''
-				end
-				self.board_cards = board_cards.split('/').join('')
-
-				# then process betting rounds
-				betting.split(//).each do |action|
-					method = case action
-						when 'r'
-							'raise!'
-						when 'c'
-							'call!'
-						when 'f'
-							'fold!'
-						else
-							nil
-					end
-					if method
-						act(method)	
-					end
-				end
-				if player_to_act.respond_to?(:get_action)
-					player_to_act.get_action
-				end
-
-				players.each do |p|
-					p.state_changed
-				end
-				#print_players
-
-			end
 		end
 
 		def board_str
@@ -199,6 +157,7 @@ class Merlion
 			players.each do |p|
 				p.state_changed
 			end
+			#print_players
 		end
 
 		def inspect
@@ -364,6 +323,8 @@ class Merlion
 			players.each do |p|
 				p.hand_finished
 			end
+
+			start_hand
 		end
 
 		def minimum_bet

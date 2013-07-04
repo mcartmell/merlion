@@ -99,7 +99,7 @@ class Merlion
 			return (@stack == 0)
 		end
 
-		def call!
+		def call
 			bet(to_call)
 			@acted = true
 			@last_action = 1
@@ -135,13 +135,13 @@ class Merlion
 			return (put_in_this_round > 0)
 		end
 
-		def fold!
+		def fold
 			@folded = true
 			@acted = true
 			@last_action = 0
 		end
 
-		def raise!(amount = nil)
+		def raise (amount = nil)
 			unless amount
 				amount = to_call + @game.minimum_bet
 			end
@@ -212,9 +212,5 @@ class Merlion
 
 		def hand_finished
 		end
-
-		def get_move
-		end
-
 	end
 end
