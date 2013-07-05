@@ -1,4 +1,5 @@
 require 'logger'
+require 'colorize'
 class Merlion
 	module Log
 		LogLevels = {
