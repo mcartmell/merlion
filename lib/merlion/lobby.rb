@@ -18,7 +18,12 @@ class Merlion
 		end
 
 		def add_player_to_game(game, conn)
-			conn.player = games[game].add_player
+			new_player = games[game].add_player
+			# remember which player is on this connection
+			conn.player = new_player
+			# set the connection for the player, so they can write messages
+			new_player.conn = conn
+			# consider starting the hand
 			games[game].player_added
 		end
 
@@ -59,6 +64,10 @@ class Merlion
 
 			def receive_line (data)
 				process_line(data)
+			end
+
+			def send_data(data)
+				puts data
 			end
 		end
 

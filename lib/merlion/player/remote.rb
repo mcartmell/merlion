@@ -8,8 +8,11 @@ class Merlion
 			include Merlion::Log
 			include Merlion::Util
 
+			attr_accessor :conn
+
 			def initialize(opts = {})
 				super
+				self.conn = opts[:conn]
 			end
 
 			def move_received(move)
@@ -28,6 +31,14 @@ class Merlion
 
 			def get_move
 				return Fiber.yield
+			end	
+
+			def state_changed
+				write("Something happened")
+			end
+
+			def write(msg)
+				conn.send_data(msg)
 			end
 
 		end

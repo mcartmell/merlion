@@ -35,7 +35,7 @@ class Merlion
 			def player_added
 				unless self.stage_num
 					start_hand # try starting hand
-					fiber.resume
+					fiber.resume # get back to main loop
 				end
 			end
 
