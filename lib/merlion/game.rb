@@ -11,6 +11,7 @@ class Merlion
 		include Merlion::Util
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id
 		attr_reader :stacks, :names, :pe
+		attr_reader :default_player_class
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 		ActionMap = {
@@ -21,7 +22,6 @@ class Merlion
 
 		# The main loop. Should not need to be overridden
 		def main_loop
-			set_initial_state!
 			loop do
 				move = get_next_move
 				process_move(move)
@@ -38,7 +38,8 @@ class Merlion
 			default = {
 				small_blind: 10,
 				big_blind: 20,
-				names: []
+				names: [],
+				default_player_class: Merlion::Player
 			}
 			opts = default.merge(opts)
 
@@ -48,8 +49,9 @@ class Merlion
 
 			@current_player = 0
 
-			@names = opts[:names]
+			@default_player_class = opts[:default_player_class]
 
+			@names = opts[:names]
 			@stacks = opts[:stacks] || [10000] * @num_players
 			@players = []
 
@@ -70,8 +72,9 @@ class Merlion
 		#	@param index [Integer] The player's seat
 		# @param type [Class] The class of player to create
 		# @param name [String] The player's name
-		def create_player(index, type = Merlion::Player, name = nil)
+		def create_player(index = nil, type = nil, name = nil)
 			i = index
+			type ||= self.default_player_class
 			opts = {stack: stacks[i], seat: i, game: self, name: (names[i] || "Player #{i}")}
 			return type.new(opts)
 		end

@@ -15,6 +15,7 @@ class Merlion
 				server = opts[:server]
 				port = opts[:port]
 				@socket = TCPSocket.new server, port
+				set_initial_state!
 			end
 
 			def set_initial_state!
