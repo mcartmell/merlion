@@ -19,7 +19,7 @@ class Merlion
 		def self.log
 			return @log if @log
 			@log = Logger.new(STDOUT)
-			@log.level = Logger::DEBUG
+			@log.level = Logger::INFO
 			@log.formatter = log_formatter
 			return @log
 		end

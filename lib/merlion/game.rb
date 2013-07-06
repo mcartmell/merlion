@@ -16,34 +16,29 @@ class Merlion
 			'r' => :raise
 		}
 
-		def action(str)
-			act = ActionMap[str]
-			unless act
-				raise "Unknown action '#{str}'"
+		def main_loop
+			set_initial_state!
+			loop do
+				move = get_next_move
+				process_move(move)
 			end
-			return act
 		end
 
-		def action_str(sym)
-			act = ActionMap.invert[sym]
-			unless act
-				raise "Unknown action '#{sym}'"
-			end
-			return act
-		end
-		
 		def initialize_from_opts(opts = {})
 			default = {
+				small_blind: 10,
+				big_blind: 20,
+				names: []
 			}
 			opts = default.merge(opts)
 
-			@small_blind = opts[:small_blind] || 10
-			@big_blind = opts[:big_blind] || 20
+			@small_blind = opts[:small_blind]
+			@big_blind = opts[:big_blind]
 			@num_players = opts[:num_players]
 
 			@current_player = 0
 
-			@names = opts[:names] || []
+			@names = opts[:names]
 
 			@stacks = opts[:stacks] || [10000] * @num_players
 			@players = []
@@ -59,23 +54,26 @@ class Merlion
 			end
 		end
 
-
-		def main_loop
-			set_initial_state!
-			loop do
-				move = get_next_move
-				process_move(move)
-			end
-		end
-
-		def set_initial_state!
-		end
-
 		def create_player(index, type = Merlion::Player, name = nil)
 			i = index
 			opts = {stack: stacks[i], seat: i, game: self, name: (names[i] || "Player #{i}")}
 			return type.new(opts)
 		end
+
+		def start_hand
+			self.stage_num = 0
+			self.pot = 0
+			self.current_bet = 0
+			self.current_player = first_to_act
+			self.board_cards = nil
+			self.last_player_to_act = nil
+			players.each do |p|
+				p.hand_started
+			end
+			act('small_blind')
+			act('big_blind')
+		end
+
 
 		# clone this object, but clone the players too
 		def duplicate
@@ -101,18 +99,8 @@ class Merlion
 			players[last_player_to_act]
 		end
 
-		def start_hand
-			self.stage_num = 0
-			self.pot = 0
-			self.current_bet = 0
-			self.current_player = first_to_act
-			self.board_cards = nil
-			self.last_player_to_act = nil
-			players.each do |p|
-				p.hand_started
-			end
-			act('small_blind')
-			act('big_blind')
+		def inspect
+			"#{stage.to_s.upcase} [#{board_str}] [#{pot}] [#{current_bet} bet] [#{current_player} to go] (#{@players.map{|p| p.inspect}.join('|')})"
 		end
 
 		def print_players
@@ -133,6 +121,10 @@ class Merlion
 
 		def board_str
 			board_cards
+		end
+
+		def minimum_bet
+			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
 		end
 
 		def num_board_cards
@@ -161,12 +153,10 @@ class Merlion
 			#print_players
 		end
 
-		def inspect
-			"#{stage.to_s.upcase} [#{board_str}] [#{pot}] [#{current_bet} bet] [#{current_player} to go] (#{@players.map{|p| p.inspect}.join('|')})"
-		end
-
-		def stage
-			return Stages[self.stage_num]
+		def stage_changed
+			players.each do |p|
+				p.stage_changed
+			end
 		end
 
 		def put_in_pot(player, amount)
@@ -246,21 +236,6 @@ class Merlion
 			return nil
 		end
 
-		def player_finished
-			debug("Player finished")
-			self.last_player_to_act = current_player
-
-			if num_active_players == 1
-				return hand_finished
-			end
-
-			if (next_player = next_player_to_act(next_seat))
-				self.current_player = next_player
-			else
-				next_stage
-			end
-		end
-
 		def has_got_enough_cards_for_stage?
 			return nil unless board_cards
 			case stage
@@ -275,6 +250,14 @@ class Merlion
 			end
 		end
 
+		def num_active_players
+			return active_players.size
+		end
+
+		def active_players
+			return @players.select{|p| p.active?}
+		end
+
 		def next_stage
 			if (stage == :river)
 				self.current_player = nil
@@ -287,15 +270,23 @@ class Merlion
 					player.acted = false
 				end
 				@current_player = next_player_to_act(first_to_act)
+				stage_changed
 			end
 		end
 
-		def num_active_players
-			return active_players.size
-		end
+		def player_finished
+			debug("Player finished")
+			self.last_player_to_act = current_player
 
-		def active_players
-			return @players.select{|p| p.active?}
+			if num_active_players == 1
+				return hand_finished
+			end
+
+			if (next_player = next_player_to_act(next_seat))
+				self.current_player = next_player
+			else
+				next_stage
+			end
 		end
 
 		def hand_finished
@@ -329,8 +320,27 @@ class Merlion
 			start_hand
 		end
 
-		def minimum_bet
-			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
+		def set_initial_state!
+		end
+
+		def stage
+			return Stages[self.stage_num]
+		end
+
+		def action(str)
+			act = ActionMap[str]
+			unless act
+				raise "Unknown action '#{str}'"
+			end
+			return act
+		end
+
+		def action_str(sym)
+			act = ActionMap.invert[sym]
+			unless act
+				raise "Unknown action '#{sym}'"
+			end
+			return act
 		end
 
 		alias_method :act, :process_move

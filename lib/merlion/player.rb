@@ -20,9 +20,6 @@ class Merlion
 			@hole_cards
 		end
 
-		def stage_finished
-		end
-
 		def rewind!
 			@stack = @game_stack
 			@folded = false
@@ -209,6 +206,9 @@ class Merlion
 		end
 
 		def state_changed
+		end
+
+		def stage_changed
 		end
 
 		def hand_finished
