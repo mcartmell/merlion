@@ -9,17 +9,11 @@ class Merlion
 	class Game
 		include Merlion::Log
 		include Merlion::Util
-		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id
+		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
-		ActionMap = {
-			'f' => :fold,
-			'c' => :call,
-			'r' => :raise
-		}
-
 		# The main loop. Should not need to be overridden
 		def main_loop
 			loop do
@@ -39,13 +33,17 @@ class Merlion
 				small_blind: 10,
 				big_blind: 20,
 				names: [],
-				default_player_class: Merlion::Player
+				default_player_class: Merlion::Player,
+				min_players: 2,
+				max_players: 10
 			}
 			opts = default.merge(opts)
 
 			@small_blind = opts[:small_blind]
 			@big_blind = opts[:big_blind]
 			@num_players = opts[:num_players]
+			@min_players = opts[:min_players]
+			@max_players = opts[:max_players]
 
 			@current_player = 0
 
@@ -54,17 +52,24 @@ class Merlion
 			@names = opts[:names]
 			@stacks = opts[:stacks] || [10000] * @num_players
 			@players = []
+			@dealer = opts[:dealer] || get_first_dealer
 
 			create_players
-
-			@dealer = opts[:dealer] || get_first_dealer
 		end
 
 		# Creates the player objects
 		def create_players
 			@num_players.times do |i|
-				@players[i] = create_player(i)
+				@players[i] = create_player({seat: i})
 			end
+		end
+
+		def seated_players
+			return @players.select {|p| p != nil}
+		end 
+
+		def num_seated_players
+			return seated_players.size
 		end
 
 		# Creates an individual player
@@ -72,21 +77,38 @@ class Merlion
 		#	@param index [Integer] The player's seat
 		# @param type [Class] The class of player to create
 		# @param name [String] The player's name
-		def create_player(index = nil, type = nil, name = nil)
-			i = index
-			type ||= self.default_player_class
-			opts = {stack: stacks[i], seat: i, game: self, name: (names[i] || "Player #{i}")}
+		def create_player(opts = {}) 
+			seat = opts[:seat]
+			if seat
+				opts[:stack] ||= stacks[seat]
+				opts[:name] ||= names[seat]
+			end
+			type = opts[:class] || self.default_player_class
+			opts[:game] = self
 			return type.new(opts)
+		end
+
+		def add_players_to_seats
 		end
 
 		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
+			add_players_to_seats
+			debug("Considering starting hand: #{num_seated_players} #{min_players}")
+			return unless num_seated_players >= min_players 
+			unless self.dealer
+				self.dealer = get_first_dealer
+			end
+			debug ("Starting hand")
 			self.stage_num = 0
 			self.pot = 0
 			self.current_bet = 0
 			self.current_player = first_to_act
 			self.board_cards = ''
 			self.last_player_to_act = nil
+			players.each do |p|
+				p.rewind!
+			end
 			deal_cards
 			players.each do |p|
 				p.hand_started
@@ -143,6 +165,7 @@ class Merlion
 
 		def get_first_dealer
 			dealer = @current_player
+			return if players.empty?
 			loop do
 				dealer = prev_seat(dealer)
 				break unless players[dealer].out?
@@ -247,7 +270,7 @@ class Merlion
 		# @param i [Integer] The seat number to start from
 		# @param times [Integer] The number of seats to loop through
 		# @param exclude_out [Boolean] Whether or not to include players that are 'out' (have no chips remaining)
-		def next_seat(i = nil, times = 1, exclude_out = false)
+		def next_seat(i = nil, times = 1, exclude_out = true)
 			return unless times
 			seat = i || @current_player
 			count = 0
@@ -255,7 +278,7 @@ class Merlion
 				seat = seat + 1
 				seat = 0 if seat > (num_players - 1)
 				if exclude_out
-					count += 1 unless players[seat].out?
+					count += 1 if players[seat] && !(players[seat].out?)
 				else
 					count += 1
 				end
@@ -274,13 +297,13 @@ class Merlion
 			return seat
 		end
 
-		def cycle_seats(start = nil)
+		def cycle_seats(start = nil, exclude_out = true)
 			start = @current_player unless start
 			seat = start
 			first_seat = seat
 			loop do
 				yield @players[seat], seat
-				seat = next_seat(seat)
+				seat = next_seat(seat, 1, exclude_out)
 				break if seat == first_seat
 			end
 			return nil
@@ -309,7 +332,7 @@ class Merlion
 		end
 
 		def has_got_enough_cards_for_stage?
-			return nil unless board_cards
+			return false unless board_cards
 			case stage
 				when :preflop
 					return num_board_cards == 0
@@ -404,22 +427,6 @@ class Merlion
 
 		def stage
 			return Stages[self.stage_num]
-		end
-
-		def action(str)
-			act = ActionMap[str]
-			unless act
-				raise "Unknown action '#{str}'"
-			end
-			return act
-		end
-
-		def action_str(sym)
-			act = ActionMap.invert[sym]
-			unless act
-				raise "Unknown action '#{sym}'"
-			end
-			return act
 		end
 
 		alias_method :act, :process_move

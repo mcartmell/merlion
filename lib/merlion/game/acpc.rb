@@ -36,7 +36,7 @@ class Merlion
 			def set_bot_seat(seats_from_dealer)
 				return if self.bot_seat # already set
 				self.bot_seat = next_seat(self.dealer, seats_from_dealer, true)
-				bot = create_player(self.bot_seat, Merlion::Bot)
+				bot = create_player({ seat: self.bot_seat, class: Merlion::Bot })
 				bot.rewind!
 				players[self.bot_seat] = bot
 			end
@@ -78,7 +78,7 @@ class Merlion
 			def create_players
 				num_players.times do |i|
 					player_class = Merlion::Player
-					@players[i] = create_player(i, player_class)
+					@players[i] = create_player({ seat: i, class: player_class })
 				end
 			end
 
@@ -133,7 +133,7 @@ class Merlion
 					begin
 						last_action = action(last_act_char)
 					rescue
-						return nil
+						last_action = nil
 					end
 
 					return {
@@ -143,6 +143,7 @@ class Merlion
 						seats_from_dealer: seats_from_dealer
 					}
 				end
+				debug("Didn't get anything from server")
 			end
 
 			def hand_finished

@@ -1,9 +1,11 @@
 require 'pokereval'
+require 'merlion/log'
 
 class Merlion
 	class Player
-		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards
-		attr_reader :name, :last_action, :seat, :pe
+		include Merlion::Log
+		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
+		attr_reader :name, :last_action, :pe
 		attr_accessor :game, :game_stack
 		attr_accessor :stack
 		attr_accessor :seats_from_dealer
@@ -21,12 +23,17 @@ class Merlion
 			@hole_cards
 		end
 
+		def has_hole_cards?
+			return (hole_cards && hole_cards.length == 4)
+		end
+
 		# Resets state to the start of a hand
 		def rewind!
 			self.stack = @game_stack
 			self.folded = false
 			self.acted = false
 			self.put_in_this_round = 0
+			self.hole_cards = ''
 			self.seats_from_dealer = @game.active_seats_from_dealer(self.seat)
 			if self.stack == 0
 				@out = true
@@ -35,7 +42,6 @@ class Merlion
 
 		# Called when a new hand has started
 		def hand_started
-			rewind!
 		end
 
 		def out?
@@ -149,7 +155,7 @@ class Merlion
 		end
 
 		# Raises by the amount given, or by the minimum bet
-		def raise (amount = nil)
+		def bet_raise (amount = nil)
 			unless amount
 				amount = to_call + @game.minimum_bet
 			end

@@ -1,8 +1,10 @@
 require 'eventmachine'
 require 'merlion/game/local'
+require 'merlion/log'
 
 class Merlion
 	class Lobby
+		include Merlion::Log
 		attr_accessor :games
 
 		def initialize
@@ -16,15 +18,17 @@ class Merlion
 		end
 
 		def add_player_to_game(game, conn)
-			conn.player = games[game].add_player(conn)
+			conn.player = games[game].add_player
+			games[game].player_added
 		end
 
 		def remove_player_from_game(game, conn)
 			conn.player = nil
-			games[game].remove_player(conn)
+			games[game].remove_player
 		end
 
 		class Connection < EM::Connection
+			include Merlion::Log
 			attr_accessor :lobby, :player
 
 			def initialize(lobby)
@@ -36,9 +40,12 @@ class Merlion
 			end
 
 			def process_line(line)
+				line.chomp!
+				debug("Got: #{line}")
 				if self.player
 					self.player.line_received(line)
 				else
+					lobby.add_player_to_game(0, self)
 					puts "got some line from player: #{line}"
 				end
 			end
