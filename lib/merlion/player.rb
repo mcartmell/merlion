@@ -20,6 +20,7 @@ class Merlion
 			@hole_cards
 		end
 
+		# Resets state to the start of a hand
 		def rewind!
 			@stack = @game_stack
 			@folded = false
@@ -32,6 +33,7 @@ class Merlion
 			end
 		end
 
+		# Called when a new hand has started
 		def hand_started
 			rewind!
 		end
@@ -40,22 +42,27 @@ class Merlion
 			@out
 		end
 
+		# @return [Boolean] Is it this player's turn?
 		def to_act?
 			return self == game.player_to_act
 		end
 
+		# @return [Boolean] Is this player still in the hand?
 		def still_in_hand?
 			return !folded? && !out?
 		end
 
+		# @return [Boolean] Is this player still to act?
 		def still_to_act?
 			return active? && !finished_round?
 		end
 
+		# @return [Boolean] Has this player folded in this round?
 		def folded?
 			return @folded
 		end
 
+		# @return [Boolean] Has this player acted yet?
 		def acted?
 			return @acted
 		end
@@ -97,12 +104,6 @@ class Merlion
 			return (@stack == 0)
 		end
 
-		def call
-			bet(to_call)
-			@acted = true
-			@last_action = 1
-		end
-
 		def bet(amount)
 			if (stack > amount) 
 				to_put_in = amount
@@ -133,12 +134,21 @@ class Merlion
 			return (put_in_this_round > 0)
 		end
 
+		# Calls the current bet, whatever the size
+		def call
+			bet(to_call)
+			@acted = true
+			@last_action = 1
+		end
+
+		# Folds the player's hand
 		def fold
 			@folded = true
 			@acted = true
 			@last_action = 0
 		end
 
+		# Raises by the amount given, or by the minimum bet
 		def raise (amount = nil)
 			unless amount
 				amount = to_call + @game.minimum_bet
@@ -148,11 +158,13 @@ class Merlion
 			@last_action = 2
 		end
 
+		# Puts in the small blind
 		def small_blind
 			amount = @game.small_blind
 			bet(amount)
 		end
 
+		# Puts in the big blind
 		def big_blind
 			amount = @game.big_blind
 			bet(amount)
@@ -205,12 +217,15 @@ class Merlion
 			return ((card1 - card2).abs == 2)
 		end
 
+		# A callback for when the state has changed
 		def state_changed
 		end
 
+		# A callback for when a new stage has begun
 		def stage_changed
 		end
 
+		# A callback for when a hand is over
 		def hand_finished
 		end
 	end
