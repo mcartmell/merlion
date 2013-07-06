@@ -16,6 +16,7 @@ class Merlion
 			'r' => :raise
 		}
 
+		# The main loop. Should not need to be overridden
 		def main_loop
 			set_initial_state!
 			loop do
@@ -24,6 +25,8 @@ class Merlion
 			end
 		end
 
+		# Initializes the game to a given state. Can be used when the state of the
+		# game changes (eg. a player quits), not just when the table opens
 		def initialize_from_opts(opts = {})
 			default = {
 				small_blind: 10,
@@ -43,23 +46,30 @@ class Merlion
 			@stacks = opts[:stacks] || [10000] * @num_players
 			@players = []
 
-			create_players
+			create_players(names)
 
 			@dealer = opts[:dealer] || get_first_dealer
 		end
 
-		def create_players
+		# Creates the player objects
+		def create_players(names)
 			@num_players.times do |i|
-				@players[i] = create_player(i)
+				@players[i] = create_player(i, names[i])
 			end
 		end
 
+		# Creates an individual player
+		#
+		#	@param index [Integer] The player's seat
+		# @param type [Class] The class of player to create
+		# @param name [String] The player's name
 		def create_player(index, type = Merlion::Player, name = nil)
 			i = index
 			opts = {stack: stacks[i], seat: i, game: self, name: (names[i] || "Player #{i}")}
 			return type.new(opts)
 		end
 
+		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
 			self.stage_num = 0
 			self.pot = 0
@@ -74,8 +84,7 @@ class Merlion
 			act('big_blind')
 		end
 
-
-		# clone this object, but clone the players too
+		# Clone this object, but clone the players too
 		def duplicate
 			newgame = self.clone
 			newplayers = []
@@ -95,6 +104,7 @@ class Merlion
 			return dealer
 		end
 
+		# The last player to act
 		def last_player
 			players[last_player_to_act]
 		end
@@ -103,6 +113,7 @@ class Merlion
 			"#{stage.to_s.upcase} [#{board_str}] [#{pot}] [#{current_bet} bet] [#{current_player} to go] (#{@players.map{|p| p.inspect}.join('|')})"
 		end
 
+		# Prints the current state of the table
 		def print_players
 			players.each_with_index do |p, i|
 				msg = i.to_s
@@ -115,6 +126,7 @@ class Merlion
 			end
 		end
 
+		# @return [String] all the cards currently in play 
 		def all_cards_used
 			return board_cards + (players.map{|p| p.hole_cards}.join(''))
 		end
@@ -123,14 +135,17 @@ class Merlion
 			board_cards
 		end
 
+		# @return [Float] The minimum bet allowed
 		def minimum_bet
 			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
 		end
 
+		# @return [Integer]
 		def num_board_cards
 			return (board_cards.length / 2)
 		end
 
+		# @return [Integer] The seat of the player to act first
 		def first_to_act
 			return heads_up? ? @dealer : next_notout_seat(@dealer)
 		end
@@ -139,6 +154,8 @@ class Merlion
 			return @num_players == 2
 		end
 
+		# Processes a move by proxying it to the current player object
+		# Also calls the 'state_changed' callback
 		def process_move(action, *args)
 			return if !player_to_act
 			player_to_act.send(action.to_sym, *args)
@@ -146,6 +163,7 @@ class Merlion
 			state_changed
 		end
 
+		# Broadcasts a 'state changed' event to all players
 		def state_changed
 			players.each do |p|
 				p.state_changed
@@ -153,12 +171,15 @@ class Merlion
 			#print_players
 		end
 
+		# Broadcasts a 'stage changed' event to all players
 		def stage_changed
 			players.each do |p|
 				p.stage_changed
 			end
 		end
 
+		# @param player [Integer] The seat of the player putting in the pot
+		# @param amount [Float] The size of the bet
 		def put_in_pot(player, amount)
 			@pot += amount
 			player.stack -= amount
@@ -167,6 +188,7 @@ class Merlion
 			end
 		end
 
+		# @return [Merlion::Player] The current player object
 		def player_to_act
 			return nil if !self.current_player || num_active_players == 1 
 			return self.players[self.current_player]
@@ -176,6 +198,9 @@ class Merlion
 			return next_seat(i, times, true)
 		end
 
+		# @param i [Integer] The seat number to start from
+		# @param times [Integer] The number of seats to loop through
+		# @param exclude_out [Boolean] Whether or not to include players that are 'out' (have no chips remaining)
 		def next_seat(i = nil, times = 1, exclude_out = false)
 			return unless times
 			seat = i || @current_player
@@ -193,6 +218,7 @@ class Merlion
 			return seat
 		end
 
+		# Like next_seat, but in reverse
 		def prev_seat(i = nil, times = 1)
 			seat = i || @current_player
 			times.times do
@@ -250,14 +276,18 @@ class Merlion
 			end
 		end
 
+		# @return [Integer] The number of players currently active in this hand
 		def num_active_players
 			return active_players.size
 		end
 
+		# @return [Array[Merlion::Player]]
 		def active_players
 			return @players.select{|p| p.active?}
 		end
 
+		# Changes state to the next stage.
+		# Broadcasts the stage_changed event to all players
 		def next_stage
 			if (stage == :river)
 				self.current_player = nil
@@ -274,6 +304,8 @@ class Merlion
 			end
 		end
 
+		# Called after a player has finished acting. May change the stage or end
+		# the hand if necessary, otherwise changes to next player
 		def player_finished
 			debug("Player finished")
 			self.last_player_to_act = current_player
@@ -289,6 +321,7 @@ class Merlion
 			end
 		end
 
+		# Called after a hand has finished to resolve the winner
 		def hand_finished
 			pe = PokerEval.new
 			debug("Hand finished")
