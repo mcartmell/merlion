@@ -6,6 +6,7 @@ class Merlion
 		attr_reader :name, :last_action, :seat, :pe
 		attr_accessor :game, :game_stack
 		attr_accessor :stack
+		attr_accessor :seats_from_dealer
 
 		def initialize(opts = {}) 
 			@game_stack = opts[:stack]
@@ -22,13 +23,12 @@ class Merlion
 
 		# Resets state to the start of a hand
 		def rewind!
-			@stack = @game_stack
-			@folded = false
-			@acted = false
-			@put_in_this_round = 0
-			@hole_cards = nil
-			@seats_from_dealer = @game.active_seats_from_dealer(self.seat)
-			if @stack == 0
+			self.stack = @game_stack
+			self.folded = false
+			self.acted = false
+			self.put_in_this_round = 0
+			self.seats_from_dealer = @game.active_seats_from_dealer(self.seat)
+			if self.stack == 0
 				@out = true
 			end
 		end

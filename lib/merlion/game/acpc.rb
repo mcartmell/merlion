@@ -11,6 +11,7 @@ class Merlion
 			attr_accessor :bot_seat
 
 			def initialize(opts = {})
+				super
 				server = opts[:server]
 				port = opts[:port]
 				@socket = TCPSocket.new server, port
@@ -153,6 +154,10 @@ class Merlion
 						break
 					end
 				end
+			end
+
+			# We don't want to deal any cards, because we'll read them from the game state
+			def deal_cards
 			end
 		end
 	end

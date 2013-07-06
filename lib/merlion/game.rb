@@ -1,13 +1,16 @@
 require 'merlion/player'
 require 'merlion/bot'
 require 'merlion/log'
+require 'merlion/util'
 require 'pokereval'
+require 'colorize'
 
 class Merlion
 	class Game
 		include Merlion::Log
+		include Merlion::Util
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id
-		attr_reader :stacks, :names
+		attr_reader :stacks, :names, :pe
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 		ActionMap = {
@@ -23,6 +26,10 @@ class Merlion
 				move = get_next_move
 				process_move(move)
 			end
+		end
+
+		def initialize(opts = {})
+			@pe = PokerEval.new
 		end
 
 		# Initializes the game to a given state. Can be used when the state of the
@@ -46,15 +53,15 @@ class Merlion
 			@stacks = opts[:stacks] || [10000] * @num_players
 			@players = []
 
-			create_players(names)
+			create_players
 
 			@dealer = opts[:dealer] || get_first_dealer
 		end
 
 		# Creates the player objects
-		def create_players(names)
+		def create_players
 			@num_players.times do |i|
-				@players[i] = create_player(i, names[i])
+				@players[i] = create_player(i)
 			end
 		end
 
@@ -75,13 +82,49 @@ class Merlion
 			self.pot = 0
 			self.current_bet = 0
 			self.current_player = first_to_act
-			self.board_cards = nil
+			self.board_cards = ''
 			self.last_player_to_act = nil
+			deal_cards
 			players.each do |p|
 				p.hand_started
 			end
 			act('small_blind')
 			act('big_blind')
+		end
+
+		def deal_preflop_cards
+			used_cards = ''
+			players.each do |p|
+				p.hole_cards = (p.hole_cards || '') + pe.get_random_hand_not_in_str(used_cards)
+				used_cards += p.hole_cards
+			end
+		end
+
+		def deal_one_board_card
+			deal_board_cards(1)
+		end
+
+		def deal_three_board_cards
+			deal_board_cards(3)
+		end
+
+		def deal_board_cards(n)
+			self.board_cards += pe.get_random_cards_not_in_str(all_cards_used, n)
+		end
+
+		def deal_cards
+			case stage
+			when :preflop
+				deal_preflop_cards
+			when :flop
+				deal_three_board_cards
+			when :turn
+				deal_one_board_card
+			when :river
+				deal_one_board_card
+			else
+				return
+			end
 		end
 
 		# Clone this object, but clone the players too
@@ -110,7 +153,7 @@ class Merlion
 		end
 
 		def inspect
-			"#{stage.to_s.upcase} [#{board_str}] [#{pot}] [#{current_bet} bet] [#{current_player} to go] (#{@players.map{|p| p.inspect}.join('|')})"
+			"#{stage.to_s.upcase.cyan} [#{render_cards(board_str)}] [#{pot}/#{current_bet} bet]"
 		end
 
 		# Prints the current state of the table
@@ -299,6 +342,7 @@ class Merlion
 					player.put_in_this_round = 0
 					player.acted = false
 				end
+				deal_cards
 				@current_player = next_player_to_act(first_to_act)
 				stage_changed
 			end
@@ -323,7 +367,6 @@ class Merlion
 
 		# Called after a hand has finished to resolve the winner
 		def hand_finished
-			pe = PokerEval.new
 			debug("Hand finished")
 			# one winner, reward them
 			if (num_active_players == 1)
