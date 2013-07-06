@@ -22,12 +22,17 @@ class Merlion
 			end
 
 			def start
+				start_hand
 				@fiber.resume
 			end
 
 			# Adds a player to the waiting list
-			def add_player
-				player = create_player({ stack: self.initial_stack })
+			def add_player(opts = {})
+				defaults = {
+					stack: self.initial_stack
+				}
+				opts = defaults.merge(opts)
+				player = create_player(opts)
 				self.waiting_players.push(player)
 				return player
 			end

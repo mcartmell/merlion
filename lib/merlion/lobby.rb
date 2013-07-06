@@ -13,6 +13,8 @@ class Merlion
 
 		def create_game
 			game = Merlion::Game::Local.new({ num_players: 3, stacks: [200,200,200] })
+			game.add_player({class: Merlion::Bot})
+			game.add_player({class: Merlion::Bot})
 			game.start
 			return game
 		end
