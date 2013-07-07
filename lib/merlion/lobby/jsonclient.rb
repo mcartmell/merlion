@@ -3,10 +3,15 @@ require 'merlion/lobby/connhelper'
 require 'em-websocket'
 require 'eventmachine'
 require 'singleton'
+require 'json'
+
 class Merlion
 	class Lobby
 		class JSONClient
 			include Merlion::Lobby::ConnHelper
+			def get_games_list
+				return lobby.get_games.to_json
+			end
 		end
 		class WebSocketConnection < JSONClient
 			def initialize(ws, lobby)
@@ -14,6 +19,7 @@ class Merlion
 				@lobby = lobby
 			end
 			def write(msg)
+				msg.encode!('UTF-8')
 				@ws.send(msg)
 			end	
 		end

@@ -6,7 +6,7 @@ class Merlion
 	class Lobby
 		class TextClient < Merlion::Lobby::Connection
 			include Merlion::Lobby::ConnHelper
-			def write
+			def write(msg)
 				send_data(msg)
 			end
 		end

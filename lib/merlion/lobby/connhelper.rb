@@ -16,15 +16,37 @@ class Merlion
 				raise "Abstract method called"
 			end
 
+			def get_games_list
+				return lobby.get_games.map do |game|
+					"#{game[:id]} (#{game[:players]}/#{game[:max_players]})"
+				end.join("\n")
+			end
+
 			def process_line(line)
 				line.chomp!
-				debug("Got: #{line}")
-				if self.player
-					self.player.line_received(line)
+				l = line.split(/\s+/)
+				cmd = l[0]
+				resp = 
+				case cmd
+				when 'list'
+					get_games_list
 				else
-					lobby.add_player_to_game(0, self)
-					puts "got some line from player: #{line}"
+					if self.player
+						self.player.line_received(line)
+					end
+					unknown_cmd(cmd)
+					#lobby.add_player_to_game(0, self)
+					#
+					#puts "got some line from player: #{line}"
 				end
+
+				if resp
+					write(resp)
+				end
+			end
+
+			def unknown_cmd(cmd)
+				"Unknown command: #{cmd}"
 			end
 		end
 	end

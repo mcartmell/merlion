@@ -32,6 +32,18 @@ class Merlion
 			games[game].remove_player
 		end
 
+		def get_games
+			g = games.map do |game|
+				{
+					id: game.object_id,
+					players: game.num_seated_players,
+					max_players: game.max_players
+				}
+			end
+			return g
+		end
+
+
 		class Connection < EM::Connection
 			include Merlion::Log
 
