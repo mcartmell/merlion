@@ -64,7 +64,7 @@ class Merlion
 				end
 
 				if resp
-					write(resp)
+					write(resp, cmd)
 				end
 			end
 

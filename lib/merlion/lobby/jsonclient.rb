@@ -18,9 +18,12 @@ class Merlion
 				@ws = ws
 				@lobby = lobby
 			end
-			def write(msg)
+			def write(msg, channel)
 				msg.encode!('UTF-8')
-				@ws.send(msg)
+				payload = {
+					merlion: [channel, msg]
+				}.to_json
+				@ws.send(payload)
 			end	
 		end
 	end
