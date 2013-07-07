@@ -34,8 +34,22 @@ class Merlion
 			end	
 
 			def state_changed
-				write("Something happened")
+				write_state_changed(self)
 			end
+
+			def stage_changed
+				write_stage_changed(self)
+			end
+
+			def hand_started
+				write_hand_started(self)
+			end
+
+			def hand_finished
+				write_hand_finished(self)
+			end
+
+			def 
 
 			def write(msg)
 				conn.write(msg)

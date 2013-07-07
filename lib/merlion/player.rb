@@ -40,10 +40,6 @@ class Merlion
 			end
 		end
 
-		# Called when a new hand has started
-		def hand_started
-		end
-
 		def out?
 			@out
 		end
@@ -221,6 +217,10 @@ class Merlion
 		def has_connected_but_one?
 			(card1, card2) = hole_str.gsub(/[hcsd]/, '').split(//).map{|c| pe.rank_to_num(c)}
 			return ((card1 - card2).abs == 2)
+		end
+
+		# Called when a new hand has started
+		def hand_started
 		end
 
 		# A callback for when the state has changed

@@ -17,6 +17,18 @@ class Merlion
 				raise "Abstract method called"
 			end
 
+			def write_state_changed(p)
+			end
+
+			def write_stage_changed(p)
+			end
+
+			def write_hand_started(p)
+			end
+
+			def write_hand_finished(p)
+			end
+
 			def get_games_list
 				return lobby.get_games.map do |game|
 					"#{game[:id]} (#{game[:players]}/#{game[:max_players]})"
