@@ -38,7 +38,7 @@ class Merlion
 			end
 
 			def write(msg)
-				conn.send_data(msg)
+				conn.write(msg)
 			end
 
 		end
