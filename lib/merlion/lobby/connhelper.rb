@@ -2,10 +2,11 @@ require 'merlion/log'
 
 class Merlion
 	class Lobby
+		# Routes and responds to messages from clients
 		module ConnHelper
 			include Merlion::Log
-			attr_accessor :player
 			attr_reader :lobby
+			attr_accessor :last_table
 
 			def handle(data)
 				process_line(data)
@@ -22,22 +23,44 @@ class Merlion
 				end.join("\n")
 			end
 
+			# Adds a new player to this 
+			def add_player(game, player)
+				@players ||= {}
+				@players[game.table_id] = player
+			end
+
+			def remove_player(table_id)
+				player_for(table_id).quit
+				@players.delete(table_id)
+			end
+
+			def player_for(table_id)
+				return @players[table_id]
+			end
+
 			def process_line(line)
 				line.chomp!
 				l = line.split(/\s+/)
 				cmd = l[0]
-				resp = 
-				case cmd
-				when 'list'
-					get_games_list
-				else
-					if self.player
-						self.player.line_received(line)
+				table_id = l[1] ? l[1].to_i : last_table
+				self.last_table = table_id
+
+				resp = nil
+				begin
+					resp = case cmd
+					when 'list'
+						get_games_list
+					when 'join'
+						lobby.add_player_to_game(table_id, self)
+					when /(call|fold|raise)/
+						player_for(table_id).line_received(cmd[0])
+					when 'leave'
+						remove_player(table_id)
+					else
+						unknown_cmd(cmd)
 					end
-					unknown_cmd(cmd)
-					#lobby.add_player_to_game(0, self)
-					#
-					#puts "got some line from player: #{line}"
+				rescue Exception => e
+					resp = "Error: " + e.message
 				end
 
 				if resp

@@ -429,6 +429,10 @@ class Merlion
 			return Stages[self.stage_num]
 		end
 
+		def table_id
+			object_id
+		end
+
 		alias_method :act, :process_move
 	end
 end

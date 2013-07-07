@@ -8,41 +8,42 @@ class Merlion
 		attr_accessor :games
 
 		def initialize
-			@games = []
+			@games = {}
 		end
 
 		def create_game
 			game = Merlion::Game::Local.new({ num_players: 3, stacks: [200,200,200] })
 			game.start
+			games[game.table_id] = game
 			return game
 		end
 
-		def add_player_to_game(game, conn)
-			new_player = games[game].add_player
+		def add_player_to_game(game_id, conn)
+			game = games[game_id]
+			unless game
+				p games.keys
+				raise "Didn't find game #{game_id}"
+			end
+			new_player = game.add_player
 			# remember which player is on this connection
-			conn.player = new_player
+			conn.add_player(game, new_player)
 			# set the connection for the player, so they can write messages
 			new_player.conn = conn
 			# consider starting the hand
-			games[game].player_added
-		end
-
-		def remove_player_from_game(game, conn)
-			conn.player = nil
-			games[game].remove_player
+			game.player_added
 		end
 
 		def get_games
-			g = games.map do |game|
-				{
-					id: game.object_id,
+			games = []
+			self.games.each do |id, game|
+				games.push({
+					id: id,
 					players: game.num_seated_players,
 					max_players: game.max_players
-				}
+				})
 			end
-			return g
+			return games
 		end
-
 
 		class Connection < EM::Connection
 			include Merlion::Log
@@ -55,7 +56,7 @@ class Merlion
 		
 		def start
 			EventMachine.run do
-				games[0] = create_game
+				create_game
 				EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)
 				EM.open_keyboard(Merlion::Lobby::KeyboardHandler, self)
 				Merlion::Lobby::WebSocketServer.instance.init(self)

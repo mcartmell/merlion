@@ -234,5 +234,9 @@ class Merlion
 		# A callback for when a hand is over
 		def hand_finished
 		end
+
+		#TODO: remove the player from the game at end of next hand
+		def quit
+		end
 	end
 end
