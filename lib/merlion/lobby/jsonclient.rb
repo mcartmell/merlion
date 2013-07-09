@@ -7,6 +7,7 @@ require 'json'
 
 class Merlion
 	class Lobby
+		# A client that communicates with JSON (eg. websocket)
 		class JSONClient
 			include Merlion::Lobby::ConnHelper
 			def get_games_list
@@ -26,6 +27,7 @@ class Merlion
 				@lobby = lobby
 			end
 			
+			# Send a message to the wbsocket
 			# @param msg [Object] The JSON data to send
 			# @param channel [String] This maps to a websocket 'event listener' on the client side
 			def write(msg, channel)
@@ -41,6 +43,7 @@ end
 
 class Merlion
 	class Lobby
+		# The main EventMachine websocket connection handler. Simply routes messages to the client.
 		class WebSocketServer
 			include Singleton
 			attr_reader :lobby

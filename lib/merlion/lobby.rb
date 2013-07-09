@@ -3,6 +3,7 @@ require 'merlion/game/local'
 require 'merlion/log'
 
 class Merlion
+	# Represents a poker 'lobby'. Consists of multiple games, and handles the adding/removing of players to these games.
 	class Lobby
 		include Merlion::Log
 		attr_accessor :games
@@ -55,6 +56,8 @@ class Merlion
 		end
 		
 		def start
+			# Start listening on various protocols: keyboard, telnet and websocket.
+			# Players can use any of these.
 			EventMachine.run do
 				create_game
 				EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)

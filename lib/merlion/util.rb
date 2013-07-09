@@ -6,12 +6,14 @@ class Merlion
 			'c' => :call,
 			'r' => :bet_raise
 		}
+		#  Simple helper to ansi-colour card strings on a terminal
 		def render_cards(str)
 			str.scan(/../).map do |cards|
 				cards =~ /d|h/ ? cards.red.on_white : cards.black.on_white
 			end.join('')
 		end
 
+		# Converts a single-letter action into a symbol
 		def action(str)
 			act = ActionMap[str]
 			unless act
@@ -20,6 +22,7 @@ class Merlion
 			return act
 		end
 
+		# Converts an action symbol into a single letter
 		def action_str(sym)
 			act = ActionMap.invert[sym]
 			unless act

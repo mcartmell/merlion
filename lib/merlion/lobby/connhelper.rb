@@ -35,17 +35,19 @@ class Merlion
 				end.join("\n")
 			end
 
-			# Adds a new player to this 
+			# Associates a player with this connection
 			def add_player(game, player)
 				@players ||= {}
 				@players[game.table_id] = player
 			end
 
+			# Removes a player from this connection
 			def remove_player(table_id)
 				player_for(table_id).quit
 				@players.delete(table_id)
 			end
 
+			# Gets the player instance associated with a given table id
 			def player_for(table_id)
 				return @players[table_id]
 			end
@@ -55,6 +57,7 @@ class Merlion
 				line.chomp!
 				l = line.split(/\s+/)
 				cmd = l[0]
+				# Remember the last table for convenience when typing
 				table_id = l[1] ? l[1].to_i : last_table
 				self.last_table = table_id
 
@@ -63,6 +66,7 @@ class Merlion
 				resp = nil
 				begin
 					resp = case cmd
+					# Check for valid commands
 					when 'list'
 						get_games_list
 					when 'join'
@@ -80,6 +84,7 @@ class Merlion
 				end
 
 				if resp
+					# Write our response. The format is left to the connection class (eg. json, text)
 					write(resp, channel)
 				end
 			end

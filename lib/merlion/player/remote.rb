@@ -4,6 +4,7 @@ require 'merlion/log'
 
 class Merlion
 	class Player
+		# Represents any player that we can directly communicate with and receive moves from
 		class Remote < Merlion::Player
 			include Merlion::Log
 			include Merlion::Util
@@ -18,6 +19,7 @@ class Merlion
 			def move_received(move)
 				if to_act?
 					debug "Got move from player: #{move}"
+					# Received a valid move from the player. We resume the fiber to continue the game.
 					return game.fiber.resume(move)
 				else 
 					debug "Doing nothing with #{move}"
@@ -30,6 +32,7 @@ class Merlion
 			end
 
 			def get_move
+				# In order to get the move we must wait for input, so we yield here until we get a callback
 				return Fiber.yield
 			end	
 

@@ -4,6 +4,7 @@ require 'merlion/lobby/connhelper'
 
 class Merlion
 	class Lobby
+		# A text client, eg. telnet/keyboard
 		class TextClient < Merlion::Lobby::Connection
 			include Merlion::Lobby::ConnHelper
 			def write(msg, channel)

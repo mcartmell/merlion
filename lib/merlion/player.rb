@@ -205,15 +205,18 @@ class Merlion
 			return card1 == card2
 		end
 
+		# @return [Boolean] Does the player have suited hole cards?
 		def has_suited?
 			return hole_str.match(/([hscd]).\1/) != nil
 		end
 
+		# @return [Boolean] Does the player have connected hole cards?
 		def has_connected?
 			(card1, card2) = hole_str.gsub(/[hcsd]/, '').split(//).map{|c| pe.rank_to_num(c)}
 			return ((card1 - card2).abs == 1)
 		end
 
+		# @return [Boolean] Does the player have connected-but-one hole cards?
 		def has_connected_but_one?
 			(card1, card2) = hole_str.gsub(/[hcsd]/, '').split(//).map{|c| pe.rank_to_num(c)}
 			return ((card1 - card2).abs == 2)
