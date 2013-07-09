@@ -49,7 +49,9 @@ class Merlion
 
 			# Gets the player instance associated with a given table id
 			def player_for(table_id)
-				return @players[table_id]
+				pl = @players[table_id]
+				raise "No such table #{table_id}" unless pl
+				return pl
 			end
 
 			# The main command handler
@@ -70,7 +72,8 @@ class Merlion
 					when 'list'
 						get_games_list
 					when 'join'
-						lobby.add_player_to_game(table_id, self)
+						player = lobby.add_player_to_game(table_id, self)
+						join_message(player)
 					when /(call|fold|raise)/
 						player_for(table_id).line_received(cmd[0])
 					when 'leave'

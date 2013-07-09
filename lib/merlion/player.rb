@@ -6,12 +6,12 @@ class Merlion
 		include Merlion::Log
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
 		attr_reader :name, :last_action, :pe
-		attr_accessor :game, :game_stack
+		attr_accessor :game
 		attr_accessor :stack
 		attr_accessor :seats_from_dealer
 
 		def initialize(opts = {}) 
-			@game_stack = opts[:stack]
+			@stack = opts[:stack]
 			@game = opts[:game]
 			@name = opts[:name]
 			@seat = opts[:seat]
@@ -29,7 +29,6 @@ class Merlion
 
 		# Resets state to the start of a hand
 		def rewind!
-			self.stack = @game_stack
 			self.folded = false
 			self.acted = false
 			self.put_in_this_round = 0
@@ -136,18 +135,34 @@ class Merlion
 			return (put_in_this_round > 0)
 		end
 
+		def check
+			@acted = true
+			@last_action = :check
+		end
+
+		def check_or_fold
+			if to_call == 0
+				return check
+			else
+				return fold
+			end
+		end
+
 		# Calls the current bet, whatever the size
 		def call
+			if to_call == 0
+				return check
+			end
 			bet(to_call)
 			@acted = true
-			@last_action = 1
+			@last_action = :call
 		end
 
 		# Folds the player's hand
 		def fold
 			@folded = true
 			@acted = true
-			@last_action = 0
+			@last_action = :fold
 		end
 
 		# Raises by the amount given, or by the minimum bet
@@ -157,7 +172,11 @@ class Merlion
 			end
 			bet(amount)
 			@acted = true
-			@last_action = 2
+			if to_call > 0
+				@last_action = :raise
+			else
+				@last_action = :bet
+			end
 		end
 
 		# Puts in the small blind
@@ -189,7 +208,7 @@ class Merlion
 		end
 
 		def inspect
-			return "[#{name}/#{stack}/#{active?} #{hole_str}]"
+			return "#{self.object_id} #{self.class} [#{name}/#{stack}/#{active?} #{hole_str}]"
 		end
 
 		def sklansky_group
@@ -240,6 +259,17 @@ class Merlion
 
 		#TODO: remove the player from the game at end of next hand
 		def quit
+		end
+
+		def to_hash
+			hash = {}
+			hash[:name] = name
+			hash[:seat] = seat
+			hash[:stack] = stack
+			hash[:put_in] = put_in_this_round
+			hash[:last_action] = last_action
+			hash[:cards] = hole_cards
+			return hash
 		end
 	end
 end

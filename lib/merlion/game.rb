@@ -30,8 +30,8 @@ class Merlion
 		# game changes (eg. a player quits), not just when the table opens
 		def initialize_from_opts(opts = {})
 			default = {
-				small_blind: 10,
-				big_blind: 20,
+				small_blind: 1,
+				big_blind: 2,
 				names: [],
 				default_player_class: Merlion::Player,
 				min_players: 2,
@@ -85,17 +85,23 @@ class Merlion
 			end
 			type = opts[:class] || self.default_player_class
 			opts[:game] = self
-			return type.new(opts)
+			puts type
+			obj = type.new(opts)
+			return obj
 		end
 
 		def add_players_to_seats
+		end
+
+		def have_enough_players?
+			return (num_seated_players >= min_players)
 		end
 
 		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
 			add_players_to_seats
 			debug("Considering starting hand: #{num_seated_players} #{min_players}")
-			return unless num_seated_players >= min_players 
+			return unless have_enough_players?
 			unless self.dealer
 				self.dealer = get_first_dealer
 			end
@@ -259,7 +265,7 @@ class Merlion
 
 		# @return [Merlion::Player] The current player object
 		def player_to_act
-			return nil if !self.current_player || num_active_players == 1 
+			return nil unless self.current_player && have_enough_players?
 			return self.players[self.current_player]
 		end
 
@@ -407,11 +413,6 @@ class Merlion
 				end
 			end
 
-			# update game stack
-			self.players.each do |p|
-				p.game_stack = p.stack
-			end
-
 			# set next dealer
 			self.dealer = next_dealer
 
@@ -426,11 +427,35 @@ class Merlion
 		end
 
 		def stage
-			return Stages[self.stage_num]
+			begin
+				return Stages[self.stage_num]
+			rescue
+				return :not_started
+			end
 		end
 
 		def table_id
 			object_id
+		end
+
+		def to_hash
+			hash = {}
+			hash[:stage] = stage
+			hash[:pot] = pot
+			hash[:current_player] = current_player
+			hash[:cards] = board_cards
+			hash[:table_id] = table_id
+			return hash
+		end
+
+		def to_hash_full
+			h = to_hash
+			h[:players] = players.map{|p| p.to_hash}
+			return h
+		end
+
+		def bot_player
+			nil
 		end
 
 		alias_method :act, :process_move

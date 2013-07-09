@@ -2,12 +2,13 @@ require 'colorize'
 class Merlion
 	module Util
 		ActionMap = {
-			'f' => :fold,
+			'f' => :check_or_fold,
 			'c' => :call,
 			'r' => :bet_raise
 		}
 		#  Simple helper to ansi-colour card strings on a terminal
 		def render_cards(str)
+			return '' unless str
 			str.scan(/../).map do |cards|
 				cards =~ /d|h/ ? cards.red.on_white : cards.black.on_white
 			end.join('')

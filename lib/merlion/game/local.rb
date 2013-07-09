@@ -31,7 +31,8 @@ class Merlion
 			# Adds a player to the waiting list
 			def add_player(opts = {})
 				defaults = {
-					stack: self.initial_stack
+					stack: self.initial_stack,
+					name: "Anonymous"
 				}
 				opts = defaults.merge(opts)
 				player = create_player(opts)

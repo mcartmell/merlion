@@ -1,6 +1,7 @@
 require 'eventmachine'
 require 'merlion/game/local'
 require 'merlion/log'
+require 'merlion/bot'
 
 class Merlion
 	# Represents a poker 'lobby'. Consists of multiple games, and handles the adding/removing of players to these games.
@@ -13,7 +14,9 @@ class Merlion
 		end
 
 		def create_game
-			game = Merlion::Game::Local.new({ num_players: 3, stacks: [200,200,200] })
+			game = Merlion::Game::Local.new({ num_players: 4, min_players: 3, stacks: [200,200,200,200] })
+			game.add_player({ class: Merlion::Bot, name: "Merlion" })
+			game.add_player({ class: Merlion::Bot, name: "Merlion 2" })
 			game.start
 			games[game.table_id] = game
 			return game
@@ -22,16 +25,16 @@ class Merlion
 		def add_player_to_game(game_id, conn)
 			game = games[game_id]
 			unless game
-				p games.keys
 				raise "Didn't find game #{game_id}"
 			end
 			new_player = game.add_player
-			# remember which player is on this connection
-			conn.add_player(game, new_player)
 			# set the connection for the player, so they can write messages
 			new_player.conn = conn
+			# remember which player is on this connection
+			conn.add_player(game, new_player)
 			# consider starting the hand
 			game.player_added
+			return new_player
 		end
 
 		def get_games
