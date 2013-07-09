@@ -10,7 +10,14 @@ class Merlion
 		class JSONClient
 			include Merlion::Lobby::ConnHelper
 			def get_games_list
-				return lobby.get_games.to_json
+				return lobby.get_games
+			end
+
+			def create_error(e)
+				return {
+					type: 'error',
+					message: e.message
+				}
 			end
 		end
 		class WebSocketConnection < JSONClient
@@ -18,8 +25,10 @@ class Merlion
 				@ws = ws
 				@lobby = lobby
 			end
+			
+			# @param msg [Object] The JSON data to send
+			# @param channel [String] This maps to a websocket 'event listener' on the client side
 			def write(msg, channel)
-				msg.encode!('UTF-8')
 				payload = {
 					merlion: [channel, msg]
 				}.to_json

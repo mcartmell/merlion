@@ -50,12 +50,15 @@ class Merlion
 				return @players[table_id]
 			end
 
+			# The main command handler
 			def process_line(line)
 				line.chomp!
 				l = line.split(/\s+/)
 				cmd = l[0]
 				table_id = l[1] ? l[1].to_i : last_table
 				self.last_table = table_id
+
+				channel = cmd
 
 				resp = nil
 				begin
@@ -72,16 +75,21 @@ class Merlion
 						unknown_cmd(cmd)
 					end
 				rescue Exception => e
-					resp = "Error: " + e.message
+					channel = 'error'
+					resp = create_error(e)
 				end
 
 				if resp
-					write(resp, cmd)
+					write(resp, channel)
 				end
 			end
 
 			def unknown_cmd(cmd)
 				"Unknown command: #{cmd}"
+			end
+
+			def create_error(e)
+				return "Error: #{e.message}"
 			end
 		end
 	end

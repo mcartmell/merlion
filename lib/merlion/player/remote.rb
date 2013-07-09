@@ -49,8 +49,6 @@ class Merlion
 				write_hand_finished(self)
 			end
 
-			def 
-
 			def write(msg)
 				conn.write(msg)
 			end
