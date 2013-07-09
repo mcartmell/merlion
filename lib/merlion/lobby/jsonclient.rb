@@ -1,3 +1,4 @@
+require 'merlion/log'
 require 'merlion/lobby'
 require 'merlion/lobby/connhelper'
 require 'em-websocket'
@@ -62,6 +63,7 @@ class Merlion
 		# The main EventMachine websocket connection handler. Simply routes messages to the client.
 		class WebSocketServer
 			include Singleton
+			include Merlion::Log
 			attr_reader :lobby
 
 			def init(lobby)
