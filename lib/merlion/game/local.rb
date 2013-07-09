@@ -4,6 +4,7 @@ require 'merlion/game'
 
 class Merlion
 	class Game
+		# A 'local' game, meaning we are the host and can deal cards etc.
 		class Local < Merlion::Game
 			include Merlion::Log
 
@@ -13,6 +14,7 @@ class Merlion
 
 			def initialize(opts = {})
 				super
+				# Our main fiber. Simply runs the default main loop from the superclass.
 				@fiber = Fiber.new do
 					main_loop
 				end
@@ -29,7 +31,8 @@ class Merlion
 			# Adds a player to the waiting list
 			def add_player(opts = {})
 				defaults = {
-					stack: self.initial_stack
+					stack: self.initial_stack,
+					name: "Anonymous"
 				}
 				opts = defaults.merge(opts)
 				player = create_player(opts)
@@ -73,6 +76,7 @@ class Merlion
 				start_hand
 			end
 
+			# Receives the next move from the current player.
 			def get_next_move
 				to_act = nil
 				loop do
@@ -80,6 +84,7 @@ class Merlion
 					if to_act
 						break
 					else
+						# We don't have enough players, or the game hasn't started. Wait for more.
 						Fiber.yield
 					end
 				end
