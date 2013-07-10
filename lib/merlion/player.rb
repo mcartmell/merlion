@@ -101,6 +101,10 @@ class Merlion
 			return (put_in_this_round == @game.current_bet)
 		end
 
+		def bets_this_round
+			return (game.current_bet / game.minimum_bet)
+		end
+
 		def all_in?
 			return (@stack == 0)
 		end
@@ -168,6 +172,10 @@ class Merlion
 		# Raises by the amount given, or by the minimum bet
 		def bet_raise (amount = nil)
 			unless amount
+				if game.bets_this_round == 4
+					# Hit the limit for raises this round, so just call
+					return call
+				end
 				amount = to_call + @game.minimum_bet
 			end
 			bet(amount)
