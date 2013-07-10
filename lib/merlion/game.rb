@@ -9,7 +9,7 @@ class Merlion
 	class Game
 		include Merlion::Log
 		include Merlion::Util
-		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players
+		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class
 
@@ -112,6 +112,7 @@ class Merlion
 			self.current_player = first_to_act
 			self.board_cards = ''
 			self.last_player_to_act = nil
+			self.current_hand_history = Array.new { [] } 
 			players.each do |p|
 				p.rewind!
 			end
@@ -385,6 +386,7 @@ class Merlion
 		def player_finished
 			debug("Player finished")
 			self.last_player_to_act = current_player
+			record_last_action
 
 			if num_active_players == 1
 				return hand_finished
@@ -395,6 +397,11 @@ class Merlion
 			else
 				next_stage
 			end
+		end
+
+		def record_last_action
+			act = last_player.last_action
+			self.current_hand_history[self.stage_num].push(act)
 		end
 
 		# Called after a hand has finished to resolve the winner
@@ -413,14 +420,21 @@ class Merlion
 				end
 			end
 
-			# set next dealer
-			self.dealer = next_dealer
+			record_hand_history
 
 			players.each do |p|
 				p.hand_finished
 			end
 
+			# set next dealer
+			self.dealer = next_dealer
+
 			start_hand
+		end
+
+		def record_hand_history
+			p current_hand_history
+			#TODO: write hand history to db, including dealer, board cards and hole cards
 		end
 
 		def set_initial_state!
