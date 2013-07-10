@@ -29,6 +29,9 @@ class Merlion
 			def write_hand_finished(p)
 			end
 
+			def write_hole_cards(p)
+			end
+
 			def get_games_list
 				return lobby.get_games.map do |game|
 					"#{game[:id]} (#{game[:players]}/#{game[:max_players]})"
@@ -72,8 +75,7 @@ class Merlion
 					when 'list'
 						get_games_list
 					when 'join'
-						player = lobby.add_player_to_game(table_id, self)
-						join_message(player)
+						lobby.add_player_to_game(table_id, self)
 					when /(call|fold|raise)/
 						player_for(table_id).line_received(cmd[0])
 					when 'leave'
@@ -84,6 +86,7 @@ class Merlion
 				rescue Exception => e
 					channel = 'error'
 					resp = create_error(e)
+					puts e.backtrace.join("\n")
 				end
 
 				if resp

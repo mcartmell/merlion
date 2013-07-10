@@ -52,6 +52,11 @@ class Merlion
 				conn.write_hand_finished(self)
 			end
 
+			# A callback for when the player receives their hole cards
+			def hole_cards_received
+				conn.write_hole_cards(self)
+			end
+
 			def write(msg)
 				conn.write(msg)
 			end

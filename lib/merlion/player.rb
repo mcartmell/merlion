@@ -101,10 +101,6 @@ class Merlion
 			return (put_in_this_round == @game.current_bet)
 		end
 
-		def bets_this_round
-			return (game.current_bet / game.minimum_bet)
-		end
-
 		def all_in?
 			return (@stack == 0)
 		end
@@ -265,8 +261,16 @@ class Merlion
 		def hand_finished
 		end
 
+		# A callback for when the player receives their hole cards
+		def hole_cards_received
+		end
+
 		#TODO: remove the player from the game at end of next hand
 		def quit
+		end
+
+		def hole_cards_ary
+			return hole_cards.scan(/../)
 		end
 
 		def to_hash
@@ -276,7 +280,6 @@ class Merlion
 			hash[:stack] = stack
 			hash[:put_in] = put_in_this_round
 			hash[:last_action] = last_action
-			hash[:cards] = hole_cards
 			return hash
 		end
 	end

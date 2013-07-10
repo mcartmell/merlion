@@ -69,7 +69,8 @@ class Merlion
 			def set_initial_state!(opts = {})
 				defaults = {
 					default_player_class: Merlion::Player::Remote,
-					initial_stack: self.initial_stack
+					initial_stack: self.initial_stack,
+					player_delay: 0.3
 				}
 				opts = opts.merge(defaults)
 				initialize_from_opts(opts)

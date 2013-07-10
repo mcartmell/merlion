@@ -11,7 +11,7 @@ class Merlion
 		include Merlion::Util
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history
 		attr_reader :stacks, :names, :pe
-		attr_reader :default_player_class
+		attr_reader :default_player_class, :player_delay
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 		# The main loop. Should not need to be overridden
@@ -35,7 +35,8 @@ class Merlion
 				names: [],
 				default_player_class: Merlion::Player,
 				min_players: 2,
-				max_players: 10
+				max_players: 10,
+				player_delay: 0
 			}
 			opts = default.merge(opts)
 
@@ -44,6 +45,7 @@ class Merlion
 			@num_players = opts[:num_players]
 			@min_players = opts[:min_players]
 			@max_players = opts[:max_players]
+			@player_delay = opts[:player_delay]
 
 			@current_player = 0
 
@@ -116,10 +118,10 @@ class Merlion
 			players.each do |p|
 				p.rewind!
 			end
-			deal_cards
 			players.each do |p|
 				p.hand_started
 			end
+			deal_cards
 			act('small_blind')
 			act('big_blind')
 		end
@@ -148,6 +150,7 @@ class Merlion
 			case stage
 			when :preflop
 				deal_preflop_cards
+				players.each {|p| p.hole_cards_received}
 			when :flop
 				deal_three_board_cards
 			when :turn
@@ -216,6 +219,11 @@ class Merlion
 			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
 		end
 
+		def bets_this_round
+			return (current_bet / minimum_bet)
+		end
+
+
 		# @return [Integer]
 		def num_board_cards
 			return (board_cards.length / 2)
@@ -244,6 +252,7 @@ class Merlion
 			players.each do |p|
 				p.state_changed
 			end
+			sleep self.player_delay
 			#print_players
 		end
 
@@ -401,7 +410,7 @@ class Merlion
 
 		def record_last_action
 			act = last_player.last_action
-			self.current_hand_history[self.stage_num].push(act)
+			(self.current_hand_history[self.stage_num] ||= []).push(act)
 		end
 
 		# Called after a hand has finished to resolve the winner
@@ -452,12 +461,17 @@ class Merlion
 			object_id
 		end
 
+		def board_cards_ary
+			return [] unless board_cards
+			board_cards.scan(/../)
+		end
+
 		def to_hash
 			hash = {}
 			hash[:stage] = stage
 			hash[:pot] = pot
 			hash[:current_player] = current_player
-			hash[:cards] = board_cards
+			hash[:cards] = board_cards_ary
 			hash[:table_id] = table_id
 			return hash
 		end

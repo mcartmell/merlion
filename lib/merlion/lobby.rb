@@ -34,7 +34,6 @@ class Merlion
 			conn.add_player(game, new_player)
 			# consider starting the hand
 			game.player_added
-			return new_player
 		end
 
 		def get_games

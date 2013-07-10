@@ -11,8 +11,13 @@ class Merlion
 		# A client that communicates with JSON (eg. websocket)
 		class JSONClient
 			include Merlion::Lobby::ConnHelper
+			def write_hole_cards(p)
+				write({ cards: p.hole_cards_ary, seat: p.seat }, 'hole_cards')
+			end
 			def write_hand_started(p)
-				write(p.game.to_hash, 'hand_started');
+				game_info = p.game.to_hash_full
+				game_info[:hero_seat] = p.seat
+				write(game_info, 'hand_started');
 			end
 
 			def write_state_changed(p)
@@ -26,9 +31,7 @@ class Merlion
 			end
 
 			def join_message(player)
-				game_info = player.game.to_hash_full
-				game_info[:hero_seat] = player.seat
-				return game_info
+				player.game.to_hash_full
 			end
 
 			def create_error(e)
