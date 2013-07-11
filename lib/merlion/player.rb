@@ -6,7 +6,7 @@ class Merlion
 		include Merlion::Log
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
 		attr_reader :name, :pe, :yields_for_move
-		attr_accessor :game
+		attr_accessor :game, :has_quit
 		attr_accessor :stack
 		attr_accessor :seats_from_dealer, :last_action
 
@@ -17,6 +17,7 @@ class Merlion
 			@seat = opts[:seat]
 			@yields_for_move = false
 			@out = false
+			@has_quit = false
 			@pe = PokerEval.new
 		end
 
@@ -267,8 +268,9 @@ class Merlion
 		def hole_cards_received
 		end
 
-		#TODO: remove the player from the game at end of next hand
+		# Mark the player as quit, to be removed at the end of the hand
 		def quit
+			self.has_quit = true
 		end
 
 		def hole_cards_ary

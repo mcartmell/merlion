@@ -32,9 +32,14 @@ class Merlion
 				return move_received(move)
 			end
 
+			def has_quit?
+				self.has_quit
+			end
+
 			def get_move
 				# In order to get the move we must wait for input, so we yield here until we get a callback
-				timer = EM::Timer.new(30) do
+				return :check_or_fold if has_quit?
+				timer = EM::Timer.new(15) do
 					game.fiber.resume(:check_or_fold)
 				end
 				move = Fiber.yield

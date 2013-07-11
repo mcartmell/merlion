@@ -95,6 +95,11 @@ class Merlion
 						obj = @ws_conns[ws.object_id]
 						obj.handle(msg)
 					end
+					ws.onclose do 
+						obj = @ws_conns[ws.object_id]
+						obj.handle('quitall')
+						@ws_conns.delete(ws.object_id)
+					end
 				end
 			end
 		end

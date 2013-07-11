@@ -96,6 +96,14 @@ class Merlion
 		def add_players_to_seats
 		end
 
+		def remove_quit_players
+			self.players.reject! {|p| p.has_quit }
+			# update seat numbers
+			self.players.each_with_index do |p, i|
+				p.seat = i
+			end
+		end
+
 		def have_enough_players?
 			return (num_seated_players >= min_players)
 		end
@@ -103,6 +111,7 @@ class Merlion
 		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
 			add_players_to_seats
+			self.stage_num = nil
 			debug("Considering starting hand: #{num_seated_players} #{min_players}")
 			return unless have_enough_players?
 			unless self.dealer
@@ -442,8 +451,11 @@ class Merlion
 				p.hand_finished
 			end
 
-			# set next dealer
-			self.dealer = next_dealer
+			remove_quit_players
+			# set next dealer. should this be moved to hand_started?
+			if have_enough_players?
+				self.dealer = next_dealer
+			end
 
 			start_hand
 		end

@@ -50,6 +50,12 @@ class Merlion
 				@players.delete(table_id)
 			end
 
+			def remove_from_all_tables
+				@players.values.each do |p|
+					p.quit
+				end
+			end
+
 			# Gets the player instance associated with a given table id
 			def player_for(table_id)
 				pl = @players[table_id]
@@ -80,12 +86,15 @@ class Merlion
 						player_for(table_id).line_received(cmd[0])
 					when 'leave'
 						remove_player(table_id)
+					when 'quitall'
+						remove_from_all_tables
 					else
 						unknown_cmd(cmd)
 					end
 				rescue Exception => e
 					channel = 'error'
 					resp = create_error(e)
+					puts e.message
 					puts e.backtrace.join("\n")
 				end
 
