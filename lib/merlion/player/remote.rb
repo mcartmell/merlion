@@ -14,6 +14,7 @@ class Merlion
 			def initialize(opts = {})
 				super
 				self.conn = opts[:conn]
+				@yields_for_move = true
 			end
 
 			def move_received(move)

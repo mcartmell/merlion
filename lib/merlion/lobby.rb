@@ -61,14 +61,14 @@ class Merlion
 			# Start listening on various protocols: keyboard, telnet and websocket.
 			# Players can use any of these.
 			EventMachine.run do
-				create_game
+				game = create_game
+				@fiber = game.fiber
 				EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)
 				EM.open_keyboard(Merlion::Lobby::KeyboardHandler, self)
 				Merlion::Lobby::WebSocketServer.instance.init(self)
 				Merlion::Lobby::WebSocketServer.instance.start_server
 			end
 		end
-
 	end
 end
 

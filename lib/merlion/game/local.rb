@@ -89,7 +89,26 @@ class Merlion
 						Fiber.yield
 					end
 				end
-				return to_act.get_move
+				move = nil
+				if to_act.yields_for_move
+					move = to_act.get_move
+				else
+					move = defer_move
+				return move
+			end
+
+			# Yields and resumes the fiber when we have the move.
+			# Based on this pattern: http://www.igvita.com/2010/03/22/untangling-evented-code-with-ruby-fibers/
+			def defer_move
+				f = fiber
+				getmove = proc do
+					to_act.get_move
+				end
+				callback = proc do |result|
+					f.resume(result)
+				end	
+				EM.defer(getmove, callback)
+				move = Fiber.yield
 			end
 		end
 	end

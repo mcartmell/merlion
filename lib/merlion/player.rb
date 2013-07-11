@@ -5,7 +5,7 @@ class Merlion
 	class Player
 		include Merlion::Log
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
-		attr_reader :name, :last_action, :pe
+		attr_reader :name, :last_action, :pe, :yields_for_move
 		attr_accessor :game
 		attr_accessor :stack
 		attr_accessor :seats_from_dealer
@@ -15,6 +15,7 @@ class Merlion
 			@game = opts[:game]
 			@name = opts[:name]
 			@seat = opts[:seat]
+			@yields_for_move = false
 			@out = false
 			@pe = PokerEval.new
 		end
