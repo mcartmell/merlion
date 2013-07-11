@@ -94,6 +94,7 @@ class Merlion
 					move = to_act.get_move
 				else
 					move = defer_move
+				end
 				return move
 			end
 
@@ -102,7 +103,7 @@ class Merlion
 			def defer_move
 				f = fiber
 				getmove = proc do
-					to_act.get_move
+					player_to_act.get_move
 				end
 				callback = proc do |result|
 					f.resume(result)
