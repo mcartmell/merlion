@@ -34,7 +34,12 @@ class Merlion
 
 			def get_move
 				# In order to get the move we must wait for input, so we yield here until we get a callback
-				return Fiber.yield
+				timer = EM::Timer.new(30) do
+					game.fiber.resume(:check_or_fold)
+				end
+				move = Fiber.yield
+				timer.cancel
+				return move
 			end	
 
 			def state_changed
