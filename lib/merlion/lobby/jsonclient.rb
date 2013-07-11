@@ -20,6 +20,13 @@ class Merlion
 				write(game_info, 'hand_started');
 			end
 
+			def write_hand_finished(p)
+				winners = p.game.last_winners
+				write({
+					winners: winners.map{|p| [p[0].seat, p[1]]}
+				}, 'hand_finished')
+			end
+
 			def write_state_changed(p)
 				hash = p.game.to_hash
 				hash[:last_player] = p.game.last_player.to_hash

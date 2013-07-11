@@ -9,7 +9,7 @@ class Merlion
 	class Game
 		include Merlion::Log
 		include Merlion::Util
-		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history
+		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history, :last_winners
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class, :player_delay
 
@@ -36,7 +36,8 @@ class Merlion
 				default_player_class: Merlion::Player,
 				min_players: 2,
 				max_players: 10,
-				player_delay: 0
+				player_delay: 0,
+				last_winners: nil
 			}
 			opts = default.merge(opts)
 
@@ -418,17 +419,22 @@ class Merlion
 		def hand_finished
 			debug("Hand finished")
 			# one winner, reward them
+			winners = []
 			if (num_active_players == 1)
 				winner = @players.find{|p| p.active?}
-				winner.stack += self.pot
+				winners.push([winner, self.pot])
 			else
-				winners = active_players.select{|p| !p.hole_cards.empty?}.group_by{|p| pe.score_hand(p.hole_str, board_str)}
-				winners = winners.max.last
-				give_each = self.pot / winners.size
-				winners.each do |winner|
-					winner.stack += give_each
-				end
+				winp = active_players.select{|p| !p.hole_cards.empty?}.group_by{|p| pe.score_hand(p.hole_str, board_str)}
+				winp = winp.max.last
+				give_each = self.pot / winp.size
+				winners = winp.map{|w| [w, give_each]}
 			end
+
+			winners.each do |w|
+				w[0].stack += w[1]
+			end
+
+			self.last_winners = winners
 
 			record_hand_history
 
