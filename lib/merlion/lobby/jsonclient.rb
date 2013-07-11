@@ -26,6 +26,10 @@ class Merlion
 				write(hash, 'state_changed')
 			end
 
+			def write_stage_changed(p)
+				write(p.game.to_hash, 'stage_changed')
+			end
+
 			def get_games_list
 				return lobby.get_games
 			end
