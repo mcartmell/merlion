@@ -5,10 +5,10 @@ class Merlion
 	class Player
 		include Merlion::Log
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
-		attr_reader :name, :last_action, :pe, :yields_for_move
+		attr_reader :name, :pe, :yields_for_move
 		attr_accessor :game
 		attr_accessor :stack
-		attr_accessor :seats_from_dealer
+		attr_accessor :seats_from_dealer, :last_action
 
 		def initialize(opts = {}) 
 			@stack = opts[:stack]
@@ -32,9 +32,10 @@ class Merlion
 		def rewind!
 			self.folded = false
 			self.acted = false
-			self.put_in_this_round = 0
 			self.hole_cards = ''
+			self.put_in_this_round = 0
 			self.seats_from_dealer = @game.active_seats_from_dealer(self.seat)
+			self.last_action = nil
 			if self.stack == 0
 				@out = true
 			end

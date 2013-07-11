@@ -382,6 +382,7 @@ class Merlion
 				self.current_bet = 0
 				self.players.each do |player|
 					player.put_in_this_round = 0
+					player.last_action = nil
 					player.acted = false
 				end
 				deal_cards
