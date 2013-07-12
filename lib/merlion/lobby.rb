@@ -14,7 +14,7 @@ class Merlion
 		end
 
 		def create_game
-			game = Merlion::Game::Local.new({ num_players: 4, min_players: 3, stacks: [200,200,200,200] })
+			game = Merlion::Game::Local.new({ num_players: 4, min_players: 3, stacks: [200,200,200,200], name: "Table 1" })
 			game.add_player({ class: Merlion::Bot, name: "Merlion" })
 			game.add_player({ class: Merlion::Bot, name: "Merlion 2" })
 			game.start
@@ -42,7 +42,8 @@ class Merlion
 				games.push({
 					id: id,
 					players: game.num_seated_players,
-					max_players: game.max_players
+					max_players: game.max_players,
+					name: game.name
 				})
 			end
 			return games

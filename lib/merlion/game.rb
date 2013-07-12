@@ -9,7 +9,7 @@ class Merlion
 	class Game
 		include Merlion::Log
 		include Merlion::Util
-		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history, :last_winners
+		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history, :last_winners, :name
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class, :player_delay
 
@@ -37,7 +37,8 @@ class Merlion
 				min_players: 2,
 				max_players: 10,
 				player_delay: 0,
-				last_winners: nil
+				last_winners: nil,
+				name: "Game #{table_id}" 
 			}
 			opts = default.merge(opts)
 
@@ -47,6 +48,7 @@ class Merlion
 			@min_players = opts[:min_players]
 			@max_players = opts[:max_players]
 			@player_delay = opts[:player_delay]
+			@name = opts[:name]
 
 			@current_player = 0
 

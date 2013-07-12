@@ -286,5 +286,10 @@ class Merlion
 			hash[:last_action] = last_action
 			return hash
 		end
+
+		def hand_type
+			return pe.type_hand(hole_cards, game.board_cards)
+		end
 	end
+
 end

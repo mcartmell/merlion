@@ -23,7 +23,7 @@ class Merlion
 			def write_hand_finished(p)
 				winners = p.game.last_winners
 				write({
-					winners: winners.map{|p| [p[0].seat, p[1]]}
+					winners: winners.map{|p| [p[0].seat, p[1], p[0].hole_cards_ary, p[0].hand_type]}
 				}, 'hand_finished')
 			end
 
