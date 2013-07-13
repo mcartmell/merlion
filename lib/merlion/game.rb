@@ -412,6 +412,7 @@ class Merlion
 		end
 
 		def last_player_to_act_obj
+			return nil unless last_player_to_act
 			players[last_player_to_act]
 		end
 

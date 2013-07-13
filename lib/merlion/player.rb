@@ -190,12 +190,14 @@ class Merlion
 		def small_blind
 			amount = @game.small_blind
 			bet(amount)
+			@last_action = :blind
 		end
 
 		# Puts in the big blind
 		def big_blind
 			amount = @game.big_blind
 			bet(amount)
+			@last_action = :blind
 		end
 
 		def is_late_position?
