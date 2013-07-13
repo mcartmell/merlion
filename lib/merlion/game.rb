@@ -11,7 +11,7 @@ class Merlion
 		include Merlion::Util
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :max_players, :current_hand_history, :last_winners, :name
 		attr_reader :stacks, :names, :pe
-		attr_reader :default_player_class, :player_delay
+		attr_reader :default_player_class, :default_stack, :player_delay
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
 		# The main loop. Should not need to be overridden
@@ -38,6 +38,7 @@ class Merlion
 				max_players: 10,
 				player_delay: 0,
 				last_winners: nil,
+				stack: 200,
 				name: "Game #{table_id}" 
 			}
 			opts = default.merge(opts)
@@ -48,6 +49,7 @@ class Merlion
 			@min_players = opts[:min_players]
 			@max_players = opts[:max_players]
 			@player_delay = opts[:player_delay]
+			@default_stack = opts[:stack]
 			@name = opts[:name]
 
 			@current_player = 0
@@ -55,7 +57,7 @@ class Merlion
 			@default_player_class = opts[:default_player_class]
 
 			@names = opts[:names]
-			@stacks = opts[:stacks] || [10000] * @num_players
+			@stacks = opts[:stacks] || [@default_stack] * @num_players
 			@players = []
 			@dealer = opts[:dealer] || get_first_dealer
 
