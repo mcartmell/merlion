@@ -11,7 +11,7 @@ Merlion::Config = {
 			num_players: 10, 
 			min_players: 5,
 			stacks: 200,
-			bot_players: 4,
+			bot_players: 5,
 			name: "Table 2"
 		},
 	]
