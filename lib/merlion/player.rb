@@ -88,9 +88,15 @@ class Merlion
 			return (to_call.to_f / (game.pot + to_call))
 		end
 
+		# Can this player still act?
 		def active?
 			return !out? && !all_in? && !folded?
 		end
+
+		# Can this player win the pot?
+		def eligible?
+			return !(out? || folded?)
+		end 
 
 		def active_and_finished?
 			return active? && finished_round?

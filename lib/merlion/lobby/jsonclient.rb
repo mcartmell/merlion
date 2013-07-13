@@ -24,7 +24,14 @@ class Merlion
 				winners = p.game.last_winners
 				write({
 					winners: winners.map{|p| [p[0].seat, p[1], p[0].hole_cards_ary, p[0].hand_type]},
-					hole_cards: p.game.players.map(&:hole_cards_ary)
+					hole_cards: p.game.players.map do |player|
+						# only show players that can actually win the hand
+						if player.eligible?
+							player.hole_cards_ary
+						else
+							[]
+						end
+					end
 				}, 'hand_finished')
 			end
 
