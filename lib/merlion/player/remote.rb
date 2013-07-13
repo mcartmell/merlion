@@ -9,6 +9,8 @@ class Merlion
 			include Merlion::Log
 			include Merlion::Util
 
+			MoveTimeout = 30
+
 			attr_accessor :conn
 
 			def initialize(opts = {})
@@ -39,7 +41,7 @@ class Merlion
 			def get_move
 				# In order to get the move we must wait for input, so we yield here until we get a callback
 				return :check_or_fold if has_quit?
-				timer = EM::Timer.new(15) do
+				timer = EM::Timer.new(MoveTimeout) do
 					game.fiber.resume(:check_or_fold)
 				end
 				move = Fiber.yield

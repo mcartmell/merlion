@@ -505,6 +505,7 @@ class Merlion
 			hash[:cards] = board_cards_ary
 			hash[:table_id] = table_id
 			hash[:dealer] = dealer
+			hash[:name] = name
 			return hash
 		end
 
