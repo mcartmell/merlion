@@ -52,7 +52,8 @@ class Merlion
 					id: id,
 					players: game.num_seated_players,
 					max_players: game.num_players,
-					name: game.name
+					name: game.name,
+					player_names: game.players.map(&:name)
 				})
 			end
 			return games

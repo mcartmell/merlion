@@ -139,6 +139,10 @@ class Merlion
 			act('big_blind')
 		end
 
+		def has_posted_blinds?
+			stage_history && stage_history.size >= 2
+		end
+
 		def deal_preflop_cards
 			used_cards = ''
 			players.each do |p|
@@ -438,6 +442,10 @@ class Merlion
 			(self.current_hand_history[self.stage_num] ||= []).push(act)
 		end
 
+		def stage_history
+			return current_hand_history[stage_num]
+		end
+
 		# Called after a hand has finished to resolve the winner
 		def hand_finished
 			debug("Hand finished")
@@ -508,6 +516,9 @@ class Merlion
 			hash[:table_id] = table_id
 			hash[:dealer] = dealer
 			hash[:name] = name
+			if (stage == :preflop)
+				hash[:blinds] = has_posted_blinds?
+			end
 			return hash
 		end
 
