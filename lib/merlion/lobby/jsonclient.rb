@@ -41,7 +41,7 @@ class Merlion
 			def write_stage_changed(p)
 				hash = p.game.to_hash
 				hash[:hand_type] = p.hand_type
-				hash[:hand_strength] = p.hand_strength
+				hash[:hand_strength] = (p.hand_strength.round(2) * 100).to_i.to_s
 				write(hash, 'stage_changed')
 			end
 
