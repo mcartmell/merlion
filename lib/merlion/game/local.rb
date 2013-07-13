@@ -51,8 +51,8 @@ class Merlion
 			def add_players_to_seats
 				debug("Considering adding players to seats")
 				return if waiting_players.empty?
-				return if num_seated_players == max_players
-				(1 .. max_players).each do |np|
+				return if num_seated_players == num_players
+				(1 .. num_players).each do |np|
 					i = np - 1
 					next if players[i] # already someone in this seat
 					waiting_player = waiting_players.pop

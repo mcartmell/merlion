@@ -21,7 +21,7 @@ class Merlion
 		def create_games_from_config
 			conf[:games].each do |settings|
 				game = Merlion::Game::Local.new(settings)
-				settings[:bot_players].times do |i|
+				settings[:bot_players].downto(1) do |i|
 					game.add_player({ class: Merlion::Bot, name: "Merlion #{i}"})
 				end
 				game.start
@@ -49,7 +49,7 @@ class Merlion
 				games.push({
 					id: id,
 					players: game.num_seated_players,
-					max_players: game.max_players,
+					max_players: game.num_players,
 					name: game.name
 				})
 			end
