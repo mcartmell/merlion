@@ -29,12 +29,14 @@ class Merlion
 			end
 		end
 
-		def add_player_to_game(game_id, conn)
+		def add_player_to_game(game_id, name, conn)
 			game = games[game_id]
 			unless game
 				raise "Didn't find game #{game_id}"
 			end
-			new_player = game.add_player
+			opts = {}
+			opts[:name] = name if name
+			new_player = game.add_player(opts)
 			# set the connection for the player, so they can write messages
 			new_player.conn = conn
 			# remember which player is on this connection

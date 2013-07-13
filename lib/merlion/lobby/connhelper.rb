@@ -81,7 +81,8 @@ class Merlion
 					when 'list'
 						get_games_list
 					when 'join'
-						lobby.add_player_to_game(table_id, self)
+						name = l[2]
+						lobby.add_player_to_game(table_id, name, self)
 					when /(call|fold|raise)/
 						player_for(table_id).line_received(cmd[0])
 					when 'leave'
