@@ -29,12 +29,20 @@ class Merlion
 
 			def write_state_changed(p)
 				hash = p.game.to_hash
-				hash[:last_player] = p.game.last_player.to_hash
 				write(hash, 'state_changed')
 			end
 
+			def write_player_moved(p)
+				hash = {}
+				hash[:last_player_to_act] = p.game.last_player_to_act_obj.to_hash
+				write(hash, 'player_moved')
+			end
+
 			def write_stage_changed(p)
-				write(p.game.to_hash, 'stage_changed')
+				hash = p.game.to_hash
+				hash[:hand_type] = p.hand_type
+				hash[:hand_strength] = p.hand_strength
+				write(hash, 'stage_changed')
 			end
 
 			def get_games_list

@@ -55,6 +55,10 @@ class Merlion
 				conn.write_stage_changed(self)
 			end
 
+			def player_moved
+				conn.write_player_moved(self)
+			end
+
 			def hand_started
 				conn.write_hand_started(self)
 			end

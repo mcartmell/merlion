@@ -260,6 +260,7 @@ class Merlion
 		end
 
 		# Broadcasts a 'state changed' event to all players
+		# This is called after the player has acted
 		def state_changed
 			players.each do |p|
 				p.state_changed
@@ -403,12 +404,21 @@ class Merlion
 			end
 		end
 
+		def player_moved
+			record_last_action
+			players.each(&:player_moved)
+		end
+
+		def last_player_to_act_obj
+			players[last_player_to_act]
+		end
+
 		# Called after a player has finished acting. May change the stage or end
 		# the hand if necessary, otherwise changes to next player
 		def player_finished
 			debug("Player finished")
 			self.last_player_to_act = current_player
-			record_last_action
+			player_moved
 
 			if num_active_players == 1
 				return hand_finished
@@ -494,6 +504,7 @@ class Merlion
 			hash[:current_player] = current_player
 			hash[:cards] = board_cards_ary
 			hash[:table_id] = table_id
+			hash[:dealer] = dealer
 			return hash
 		end
 

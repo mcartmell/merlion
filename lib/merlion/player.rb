@@ -252,6 +252,10 @@ class Merlion
 		def hand_started
 		end
 
+		# Called whenever a player has taken a turn
+		def player_moved
+		end
+
 		# A callback for when the state has changed
 		def state_changed
 		end
@@ -289,6 +293,10 @@ class Merlion
 
 		def hand_type
 			return pe.type_hand(hole_cards, game.board_cards)
+		end
+
+		def hand_strength
+			return pe.str_to_hs(hole_cards, game.board_cards) 
 		end
 	end
 
