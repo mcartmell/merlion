@@ -293,6 +293,12 @@ class Merlion
 			return hash
 		end
 
+		# Shows hole cards. Only allowed at showdown
+		def to_hash_priv
+			hash = to_hash
+			hash[:cards] = hole_cards_ary
+		end
+
 		def hand_type
 			return pe.type_hand(hole_cards, game.board_cards)
 		end
