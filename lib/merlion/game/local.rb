@@ -1,12 +1,14 @@
 require 'merlion/player/remote'
 require 'merlion/log'
 require 'merlion/game'
+require 'merlion/defer'
 
 class Merlion
 	class Game
 		# A 'local' game, meaning we are the host and can deal cards etc.
 		class Local < Merlion::Game
 			include Merlion::Log
+			include Merlion::Defer
 
 			attr_accessor :waiting_players
 			attr_reader :fiber
@@ -23,8 +25,16 @@ class Merlion
 				set_initial_state!(opts)
 			end
 
+			# loop until we can start the hand
+			def start_hand
+				loop do
+					hand_started = super
+					break if hand_started
+					Fiber.yield
+				end
+			end
+
 			def start
-				start_hand
 				@fiber.resume
 			end
 
@@ -42,14 +52,12 @@ class Merlion
 
 			def player_added
 				unless self.stage_num
-					start_hand # try starting hand
 					fiber.resume # get back to main loop
 				end
 			end
 
 			# Seats a player by finding an empty seat and placing them.
 			def add_players_to_seats
-				debug("Considering adding players to seats")
 				return if waiting_players.empty?
 				return if num_seated_players == num_players
 				(1 .. num_players).each do |np|
@@ -74,7 +82,6 @@ class Merlion
 				}
 				opts = opts.merge(defaults)
 				initialize_from_opts(opts)
-				start_hand
 			end
 
 			# Receives the next move from the current player.
@@ -101,15 +108,17 @@ class Merlion
 			# Yields and resumes the fiber when we have the move.
 			# Based on this pattern: http://www.igvita.com/2010/03/22/untangling-evented-code-with-ruby-fibers/
 			def defer_move
-				f = fiber
-				getmove = proc do
-					player_to_act.get_move
+				move = nil
+				defer { move = player_to_act.get_move }
+				Fiber.yield
+				return move
+			end
+
+			def send_each_player(sym)
+				players.each do |p|
+					defer { p.send(sym) }
 				end
-				callback = proc do |result|
-					f.resume(result)
-				end	
-				EM.defer(getmove, callback)
-				move = Fiber.yield
+				Fiber.yield
 			end
 		end
 	end

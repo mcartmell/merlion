@@ -77,7 +77,13 @@ class Merlion
 				EM.open_keyboard(Merlion::Lobby::KeyboardHandler, self)
 				Merlion::Lobby::WebSocketServer.instance.init(self)
 				Merlion::Lobby::WebSocketServer.instance.start_server
+				#EM.next_tick { tick }
 			end
+		end
+
+		def tick 
+			puts "tick"
+			EM.next_tick { tick }
 		end
 	end
 end

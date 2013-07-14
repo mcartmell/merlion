@@ -17,8 +17,12 @@ class Merlion
 		# The main loop. Should not need to be overridden
 		def main_loop
 			loop do
-				move = get_next_move
-				process_move(move)
+				start_hand
+				loop do
+					move = get_next_move
+					process_move(move)
+					break if stage_num == nil
+				end
 			end
 		end
 
@@ -59,6 +63,8 @@ class Merlion
 			@stacks = opts[:stacks] || [@default_stack] * @num_players
 			@players = []
 			@dealer = opts[:dealer] || get_first_dealer
+
+			@stage_num = nil
 
 			create_players
 		end
@@ -114,7 +120,6 @@ class Merlion
 		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
 			add_players_to_seats
-			self.stage_num = nil
 			debug("Considering starting hand: #{num_seated_players} #{min_players}")
 			return unless have_enough_players?
 			unless self.dealer
@@ -131,12 +136,11 @@ class Merlion
 			players.each do |p|
 				p.rewind!
 			end
-			players.each do |p|
-				p.hand_started
-			end
+			send_each_player(:hand_started)
 			deal_cards
 			act('small_blind')
 			act('big_blind')
+			return true
 		end
 
 		def has_posted_blinds?
@@ -267,18 +271,14 @@ class Merlion
 		# Broadcasts a 'state changed' event to all players
 		# This is called after the player has acted
 		def state_changed
-			players.each do |p|
-				p.state_changed
-			end
+			send_each_player(:state_changed)
 			sleep self.player_delay
 			#print_players
 		end
 
 		# Broadcasts a 'stage changed' event to all players
 		def stage_changed
-			players.each do |p|
-				p.stage_changed
-			end
+			send_each_player(:stage_changed)
 		end
 
 		# @param player [Integer] The seat of the player putting in the pot
@@ -411,7 +411,7 @@ class Merlion
 
 		def player_moved
 			record_last_action
-			players.each(&:player_moved)
+			send_each_player(:player_moved)
 		end
 
 		def last_player_to_act_obj
@@ -469,9 +469,7 @@ class Merlion
 
 			record_hand_history
 
-			players.each do |p|
-				p.hand_finished
-			end
+			send_each_player(:hand_finished)
 
 			remove_quit_players
 			# set next dealer. should this be moved to hand_started?
@@ -479,7 +477,11 @@ class Merlion
 				self.dealer = next_dealer
 			end
 
-			start_hand
+			self.stage_num = nil
+		end
+
+		def send_each_player(sym)
+			players.each(&sym)
 		end
 
 		def record_hand_history
