@@ -8,10 +8,13 @@ It uses:
 * WebSockets (via [em-websocket](https://github.com/igrigorik/em-websocket))
 * Fibers
 
+I've written a frontend to it called [merlion-web](https://github.com/mcartmell/merlion-web).
+
+You can see it in action, and play against Merlion bots, here: http://poker.mikec.me/
+
 # TODO
 
 * Handle split pots correctly
-* Check that win amount is right
 * Record betting history for current hand
 * Record all games in database
-* Run on Heroku
+* No Limit ages
