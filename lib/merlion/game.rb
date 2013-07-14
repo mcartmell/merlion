@@ -96,6 +96,7 @@ class Merlion
 				opts[:name] ||= names[seat]
 			end
 			type = opts[:class] || self.default_player_class
+			opts[:stack] ||= self.default_stack
 			opts[:game] = self
 			puts type
 			obj = type.new(opts)

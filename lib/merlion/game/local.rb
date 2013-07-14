@@ -12,7 +12,6 @@ class Merlion
 
 			attr_accessor :waiting_players
 			attr_reader :fiber
-			attr_reader :initial_stack
 
 			def initialize(opts = {})
 				super
@@ -20,7 +19,6 @@ class Merlion
 				@fiber = Fiber.new do
 					main_loop
 				end
-				@initial_stack = opts[:initial_stack] || 200
 				@waiting_players = []
 				set_initial_state!(opts)
 			end
@@ -41,7 +39,6 @@ class Merlion
 			# Adds a player to the waiting list
 			def add_player(opts = {})
 				defaults = {
-					stack: self.initial_stack,
 					name: "Anonymous"
 				}
 				opts = defaults.merge(opts)
@@ -77,7 +74,6 @@ class Merlion
 			def set_initial_state!(opts = {})
 				defaults = {
 					default_player_class: Merlion::Player::Remote,
-					initial_stack: self.initial_stack,
 					player_delay: 0
 				}
 				opts = opts.merge(defaults)
