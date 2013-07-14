@@ -1,6 +1,12 @@
 # Merlion
 
-(work in progress)
+Merlion is a poker server written in Ruby. It's a work in progress.
+
+It uses:
+
+* [EventMachine](https://github.com/eventmachine/eventmachine)
+* WebSockets (via [em-websocket](https://github.com/igrigorik/em-websocket))
+* Fibers
 
 # TODO
 
