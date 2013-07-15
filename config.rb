@@ -1,4 +1,4 @@
-Merlion::Config = {
+Merlion::ConfigFile = {
 	games: [
 		{
 			num_players: 2, 

@@ -1,6 +1,7 @@
 require 'merlion/player'
 require 'merlion/bot'
 require 'merlion/log'
+require 'merlion/db'
 require 'merlion/util'
 require 'pokereval'
 require 'colorize'
@@ -9,6 +10,7 @@ class Merlion
 	class Game
 		include Merlion::Log
 		include Merlion::Util
+		include Merlion::DB
 		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :current_hand_history, :last_winners, :name
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class, :default_stack, :player_delay
@@ -486,8 +488,14 @@ class Merlion
 		end
 
 		def record_hand_history
-			p current_hand_history
-			#TODO: write hand history to db, including dealer, board cards and hole cards
+			db.transaction do |db|
+				actions = current_hand_history.flatten.map{|sym| action_to_db(sym).to_s}.join('')
+				db.execute('insert into games(dealer, actions, pot, board_cards) values(?,?,?,?)', dealer, actions, pot, board_cards)
+				game_id = db.last_insert_row_id
+				players.each do |p|
+					db.execute('insert into game_players(game_id, name, seat, hole_cards) values(?, ?, ?, ?)', game_id, p.name, p.seat, p.hole_cards)
+				end
+			end
 		end
 
 		def set_initial_state!

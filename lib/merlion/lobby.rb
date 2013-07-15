@@ -2,20 +2,17 @@ require 'eventmachine'
 require 'merlion/game/local'
 require 'merlion/log'
 require 'merlion/bot'
+require 'merlion/config'
 
 class Merlion
-	require File.dirname(__FILE__)+'/../../config.rb'
 	# Represents a poker 'lobby'. Consists of multiple games, and handles the adding/removing of players to these games.
 	class Lobby
+		include Merlion::Config
 		include Merlion::Log
 		attr_accessor :games
 
 		def initialize
 			@games = {}
-		end
-
-		def conf
-			Merlion::Config
 		end
 
 		def create_games_from_config

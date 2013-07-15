@@ -1,6 +1,7 @@
 require 'colorize'
 class Merlion
 	module Util
+		# ActionMap maps player input to actions, which might not actually be correct
 		ActionMap = {
 			'f' => :check_or_fold,
 			'c' => :call,
@@ -12,6 +13,19 @@ class Merlion
 		InvertedActionMap.merge!({
 			check_or_fold: 'f',
 		})
+		# This maps actions to true single-character representations
+		ActionToDb = {
+			:check => 'k',
+			:call => 'c',
+			:bet => 'b',
+			:raise => 'r',
+			:blind => 'B',
+			:fold => 'f'
+		}
+
+		def action_to_db(sym)
+			return ActionToDb[sym]
+		end
 
 		#  Simple helper to ansi-colour card strings on a terminal
 		def render_cards(str)
