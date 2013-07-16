@@ -7,7 +7,7 @@ class Merlion
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
 		attr_reader :name, :pe, :yields_for_move
 		attr_accessor :game, :has_quit
-		attr_accessor :stack
+		attr_accessor :stack, :starting_stack
 		attr_accessor :seats_from_dealer, :last_action
 
 		def initialize(opts = {}) 
@@ -37,6 +37,7 @@ class Merlion
 			self.put_in_this_round = 0
 			self.seats_from_dealer = @game.active_seats_from_dealer(self.seat)
 			self.last_action = nil
+			self.starting_stack = stack
 			if self.stack == 0
 				@out = true
 			end

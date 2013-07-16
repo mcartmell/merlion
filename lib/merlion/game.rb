@@ -7,6 +7,7 @@ require 'pokereval'
 require 'colorize'
 
 class Merlion
+	# Represents a basic game of hold'em.
 	class Game
 		include Merlion::Log
 		include Merlion::Util
@@ -28,6 +29,7 @@ class Merlion
 			end
 		end
 
+		# Sets up the PokerEval object
 		def initialize(opts = {})
 			@pe = PokerEval.new
 		end
@@ -78,10 +80,12 @@ class Merlion
 			end
 		end
 
+		# @return [Array[Merlion::Player]] The players that are currently seated in the game
 		def seated_players
 			return @players.select {|p| p != nil}
 		end 
 
+		# @return [Integr] The number of players currently seated in the game
 		def num_seated_players
 			return seated_players.size
 		end
@@ -105,9 +109,11 @@ class Merlion
 			return obj
 		end
 
+		# Called to add waiting players to seats
 		def add_players_to_seats
 		end
 
+		# Removes players that have quit, and adjust seat numbers
 		def remove_quit_players
 			self.players.reject! {|p| p.has_quit }
 			# update seat numbers
@@ -116,6 +122,7 @@ class Merlion
 			end
 		end
 
+		# @return [Boolean] Do we have enough players to start a game?
 		def have_enough_players?
 			return (num_seated_players >= min_players)
 		end
@@ -146,10 +153,12 @@ class Merlion
 			return true
 		end
 
+		# Returns true if the blinds have been posted this round
 		def has_posted_blinds?
 			stage_history && stage_history.size >= 2
 		end
 
+		# Deals hole cards to each player
 		def deal_preflop_cards
 			used_cards = ''
 			players.each do |p|
@@ -158,18 +167,25 @@ class Merlion
 			end
 		end
 
+		# Deals one board card
 		def deal_one_board_card
 			deal_board_cards(1)
 		end
 
+		# Deals three board cards
 		def deal_three_board_cards
 			deal_board_cards(3)
 		end
 
+		# Deals n cards to the board, from the set of cards currently not in play
+		# @param n [Integer] The number of cards to deal to the board
 		def deal_board_cards(n)
 			self.board_cards += pe.get_random_cards_not_in_str(all_cards_used, n)
 		end
 
+		# Gives cards to players and the board when starting a new stage Only
+		# called for local games. Remote games (eg. when plugging in to Poker
+		# Academy) should override this method
 		def deal_cards
 			case stage
 			when :preflop
@@ -197,6 +213,7 @@ class Merlion
 			return newgame
 		end
 
+		# @return [Integer] The seat number of the first dealer when starting a new game
 		def get_first_dealer
 			dealer = @current_player
 			return if players.empty?
@@ -243,6 +260,8 @@ class Merlion
 			return (self.stage_num > 1 ? self.big_blind * 2 : self.big_blind)
 		end
 
+		# @return [Integer] The number of bets a player would have to call if they
+		# were currently betting zero
 		def bets_this_round
 			return (current_bet / minimum_bet)
 		end
@@ -258,6 +277,7 @@ class Merlion
 			return heads_up? ? @dealer : next_notout_seat(@dealer)
 		end
 
+		# @return [Boolean] Is this a heads-up game?
 		def heads_up?
 			return @num_players == 2
 		end
@@ -307,6 +327,7 @@ class Merlion
 		# @param i [Integer] The seat number to start from
 		# @param times [Integer] The number of seats to loop through
 		# @param exclude_out [Boolean] Whether or not to include players that are 'out' (have no chips remaining)
+		# @return [Integer] The next seat to act 
 		def next_seat(i = nil, times = 1, exclude_out = true)
 			return unless times
 			seat = i || @current_player
@@ -346,10 +367,13 @@ class Merlion
 			return nil
 		end
 
+		# @return [Integer] The seat number of the next dealer
 		def next_dealer
 			return next_notout_seat(@dealer)
 		end
 
+		# @return [Integer] The number of active players between the dealer and the
+		# current player
 		def active_seats_from_dealer(player)
 			return 0 if self.dealer == player
 			i = 1
@@ -361,6 +385,7 @@ class Merlion
 			end
 		end
 
+		# @return [Integer] The seat of the next player to act
 		def next_player_to_act(i = nil)
 			cycle_seats(i) do |player, idx|
 				return idx if player.still_to_act?
@@ -368,6 +393,7 @@ class Merlion
 			return nil
 		end
 
+		# @return [Boolean] Is there enough cards to start the current stage?
 		def has_got_enough_cards_for_stage?
 			return false unless board_cards
 			case stage
@@ -412,11 +438,15 @@ class Merlion
 			end
 		end
 
+		# Called when a player has just moved
 		def player_moved
+			# Record their move
 			record_last_action
+			# Send each player an event notification
 			send_each_player(:player_moved)
 		end
 
+		# @return [Merlion::Player] The last player to act
 		def last_player_to_act_obj
 			return nil unless last_player_to_act
 			players[last_player_to_act]
@@ -429,22 +459,28 @@ class Merlion
 			self.last_player_to_act = current_player
 			player_moved
 
+			# If there is only one player remaining in the game, they've won, so end the hand
 			if num_active_players == 1
 				return hand_finished
 			end
 
+			# If there are more players to act, make it their turn
 			if (next_player = next_player_to_act(next_seat))
 				self.current_player = next_player
 			else
+				# If there are no more players to act this round, but >1 still in the
+				# game, progress to next stage
 				next_stage
 			end
 		end
 
+		# Records a single action for the last player's moved
 		def record_last_action
 			act = last_player.last_action
 			(self.current_hand_history[self.stage_num] ||= []).push(act)
 		end
 
+		# @return [Array] A list of actions for the current stage
 		def stage_history
 			return current_hand_history[stage_num]
 		end
@@ -470,11 +506,15 @@ class Merlion
 
 			self.last_winners = winners
 
+			# Log the game in the database
 			record_hand_history
 
+			# Send hand_finished notification
 			send_each_player(:hand_finished)
 
+			# Remoe any players that have disconnected
 			remove_quit_players
+
 			# set next dealer. should this be moved to hand_started?
 			if have_enough_players?
 				self.dealer = next_dealer
@@ -483,17 +523,24 @@ class Merlion
 			self.stage_num = nil
 		end
 
+		# Sends event notifications to each player
+		# @param sym [Symbol] The method name to call on each player
 		def send_each_player(sym)
 			players.each(&sym)
 		end
 
+		# Record the game in the database. Saves the cards, player names, seats and amounts won
+		# Should be enough to calculate a high score table, but also replay the games if needed
 		def record_hand_history
 			db.transaction do |db|
 				actions = current_hand_history.flatten.map{|sym| action_to_db(sym).to_s}.join('')
-				db.execute('insert into games(dealer, actions, pot, board_cards) values(?,?,?,?)', dealer, actions, pot, board_cards)
+				db.execute('insert into games(dealer, actions, small_blind, big_blind,
+				pot, board_cards) values(?,?,?,?,?,?)', dealer, actions, small_blind,
+				big_blind, pot, board_cards)
 				game_id = db.last_insert_row_id
 				players.each do |p|
-					db.execute('insert into game_players(game_id, name, seat, hole_cards) values(?, ?, ?, ?)', game_id, p.name, p.seat, p.hole_cards)
+					won = p.stack - p.starting_stack
+					db.execute('insert into game_players(game_id, name, seat, hole_cards, won) values(?, ?, ?, ?, ?)', game_id, p.name, p.seat, p.hole_cards, won)
 				end
 			end
 		end
@@ -513,11 +560,13 @@ class Merlion
 			object_id
 		end
 
+		# @return [Array] The board cards as an array
 		def board_cards_ary
 			return [] unless board_cards
 			board_cards.scan(/../)
 		end
 
+		# Converts the game state to a hash, for example for sending as JSON
 		def to_hash
 			hash = {}
 			hash[:stage] = stage
@@ -533,6 +582,7 @@ class Merlion
 			return hash
 		end
 
+		# @return [Hash] The game state (including players) as a hash
 		def to_hash_full
 			h = to_hash
 			h[:players] = players.map{|p| p.to_hash}
