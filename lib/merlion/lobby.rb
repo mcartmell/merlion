@@ -15,6 +15,7 @@ class Merlion
 			@games = {}
 		end
 
+			# Creates Game objects according to the config file. Also creates any Bot players if necessary and adds them to the game. Then it calls start, which begins the main_loop Fiber
 		def create_games_from_config
 			conf[:games].each do |settings|
 				game = Merlion::Game::Local.new(settings)
@@ -26,6 +27,9 @@ class Merlion
 			end
 		end
 
+		# @param game_id [Integer] The game id to add a player to
+		# @param name [String] The nme of the player
+		# @param [Merlion::Connection] The connection object to associate with this player
 		def add_player_to_game(game_id, name, conn)
 			game = games[game_id]
 			unless game
@@ -42,6 +46,8 @@ class Merlion
 			game.player_added
 		end
 
+		# Returns the list of games as a serializable structure
+		# @return [Array[Hash]] The list of games
 		def get_games
 			games = []
 			self.games.each do |id, game|
@@ -56,6 +62,7 @@ class Merlion
 			return games
 		end
 
+		# A superclass for EM::Connections
 		class Connection < EM::Connection
 			include Merlion::Log
 
@@ -65,6 +72,7 @@ class Merlion
 
 		end
 		
+		# Starts the servers that listen for new connections
 		def start
 			# Start listening on various protocols: keyboard, telnet and websocket.
 			# Players can use any of these.
