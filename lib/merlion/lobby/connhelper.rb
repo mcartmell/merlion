@@ -8,30 +8,38 @@ class Merlion
 			attr_reader :lobby
 			attr_accessor :last_table
 
+			# Called to handle a line of input from any server
 			def handle(data)
 				process_line(data)
 			end
 
+			# Writs back to the client. Should be overridden
 			def write(msg)
 				# object should implement send_data
 				raise "Abstract method called"
 			end
 
+			# Abstract method
 			def write_state_changed(p)
 			end
 
+			# Abstract method
 			def write_stage_changed(p)
 			end
 
+			# Abstract method
 			def write_hand_started(p)
 			end
 
+			# Abstract method
 			def write_hand_finished(p)
 			end
 
+			# Abstract method
 			def write_hole_cards(p)
 			end
 
+			# @return [String] The game list
 			def get_games_list
 				return lobby.get_games.map do |game|
 					"#{game[:id]} (#{game[:players]}/#{game[:max_players]})"
@@ -50,7 +58,9 @@ class Merlion
 				@players.delete(table_id)
 			end
 
+			# Remove the player from all active games.
 			def remove_from_all_tables
+				return if @players.empty?
 				@players.values.each do |p|
 					p.quit
 				end
@@ -105,10 +115,12 @@ class Merlion
 				end
 			end
 
+			# An 'unknown command' message
 			def unknown_cmd(cmd)
 				"Unknown command: #{cmd}"
 			end
 
+			# An error message
 			def create_error(e)
 				return "Error: #{e.message}"
 			end
