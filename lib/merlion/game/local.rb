@@ -32,6 +32,7 @@ class Merlion
 				end
 			end
 
+			# Starts the game. Simply resumes the main loop fiber
 			def start
 				@fiber.resume
 			end
@@ -47,6 +48,8 @@ class Merlion
 				return player
 			end
 
+			# Called when a player has been added. Unless the game is in progress, we
+			# might need to start the game, so resume the main loop
 			def player_added
 				unless self.stage_num
 					fiber.resume # get back to main loop
@@ -68,9 +71,11 @@ class Merlion
 				end
 			end
 
+			# We don't create any players until they join the game
 			def create_players
 			end
 
+			# Sets the initial state. We override the default_player_class
 			def set_initial_state!(opts = {})
 				defaults = {
 					default_player_class: Merlion::Player::Remote,
@@ -110,6 +115,8 @@ class Merlion
 				return move
 			end
 
+			# Sends each player an event notification, but does so as a deferred job
+			# so they don't block. Only return when all jobs have completed
 			def send_each_player(sym)
 				players.each do |p|
 					defer { p.send(sym) }

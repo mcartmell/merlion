@@ -3,6 +3,9 @@ require 'merlion/game'
 require 'merlion/log'
 class Merlion
 	class Game
+		# Represents a game where are are connected to a remote ACPC server.
+		# Parses the ACPC protocol, but also adds extensions for player names, stack sizes etc.
+		# Used to connect to Poker Academy via a Meerkat bridge (see java/)
 		class ACPC < Merlion::Game
 			include Merlion::Log
 
@@ -10,6 +13,7 @@ class Merlion
 			attr_reader :bot_player
 			attr_accessor :bot_seat
 
+			# Constructor.
 			def initialize(opts = {})
 				super
 				server = opts[:server]
@@ -18,6 +22,7 @@ class Merlion
 				set_initial_state!
 			end
 
+			# Reads the initial stat line and conigures the game. Then starts playing
 			def set_initial_state!
 				defaults = {
 				}
@@ -28,11 +33,15 @@ class Merlion
 				start_hand
 			end
 
+			# @return [Merlion::Player] The Merlion::Bot object
 			def bot_player
 				return unless bot_seat
 				return players[bot_seat]
 			end
 
+			# Sets the bot seat. We don't know where the bot is sitting until after
+			# the game has begun.
+			# @param seats_from_dealer [Integer] The number of seats from the dealer to the bot
 			def set_bot_seat(seats_from_dealer)
 				return if self.bot_seat # already set
 				self.bot_seat = next_seat(self.dealer, seats_from_dealer, true)
@@ -41,17 +50,21 @@ class Merlion
 				players[self.bot_seat] = bot
 			end
 
+			# Reads from th socket. Useful to add dbugging
 			def socket_get
 				line = @socket.gets.chomp
 				debug("<<< " + line)
 				return line
 			end
 
+			# A wrapper for writing to the socket
 			def socket_put(str)
 				debug(">>> " + str)
 				@socket.puts str
 			end
 
+			# Reads th 'initial state' line. Not part of ACPC, but something I've
+			# added to give us extra information
 			def read_initial_state
 				loop do
 					line = socket_get
@@ -75,6 +88,7 @@ class Merlion
 				end
 			end
 
+			# Creates tbe other players in the game
 			def create_players
 				num_players.times do |i|
 					player_class = Merlion::Player
@@ -82,6 +96,8 @@ class Merlion
 				end
 			end
 
+			# Gets the next move to happen in the game, either by asking the bot for
+			# a move or by reading the ACPC line
 			def get_next_move
 				if player_to_act.respond_to?(:get_move)
 					# get the move, write it to the server and continue reading the gamestate
@@ -97,15 +113,20 @@ class Merlion
 				return read_next_move
 			end
 
+			# Reads the next mov
 			def read_next_move
 				ms = read_acpc_matchstate
 				return ms[:last_action]
 			end
 
+			# Reads and interprets the current ACPC line
 			def read_acpc_matchstate
 				interpret_acpc_matchstate(socket_get)
 			end
 
+			# Reads an ACPC 'MATCHSTATE' line
+			# @param mstr [String] The ACPC line
+			# @return [Hash] Information about the current match state
 			def interpret_acpc_matchstate(mstr)
 				if (m = mstr.match(/MATCHSTATE:(\d+):(\d+):([^:]*):([^:]*)/))
 					seats_from_dealer = m[1].to_i + 1
@@ -146,6 +167,7 @@ class Merlion
 				debug("Didn't get anything from server")
 			end
 
+			#  Ends the hand only when we've received the '#END_HAND' line from the server
 			def hand_finished
 				loop do
 					line = socket_get
