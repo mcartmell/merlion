@@ -2,6 +2,7 @@ require 'pokereval'
 require 'merlion/log'
 
 class Merlion
+	# Represents a basic player
 	class Player
 		include Merlion::Log
 		attr_accessor :folded, :acted, :put_in_this_round, :hole_cards, :seat
@@ -10,6 +11,7 @@ class Merlion
 		attr_accessor :stack, :starting_stack
 		attr_accessor :seats_from_dealer, :last_action
 
+		# Constructor
 		def initialize(opts = {}) 
 			@stack = opts[:stack]
 			@game = opts[:game]
@@ -25,6 +27,7 @@ class Merlion
 			@hole_cards
 		end
 
+		# @return [Boolean] Hash the player received their hole cards yet?
 		def has_hole_cards?
 			return (hole_cards && hole_cards.length == 4)
 		end
@@ -84,6 +87,7 @@ class Merlion
 			return num_players_folded > 0
 		end
 
+		# Returns the immediate pot odds for their current action
 		def pot_odds
 			return nil if to_call == 0
 			return (to_call.to_f / (game.pot + to_call))

@@ -1,6 +1,7 @@
 require 'logger'
 require 'colorize'
 class Merlion
+	# A simple logging module
 	module Log
 		LogLevels = {
 			"INFO" => "* ".light_green,
@@ -10,12 +11,14 @@ class Merlion
 			"DEBUG" => "* "
 		}
 
+		# Our log formatter
 		def self.log_formatter
 			return proc do |level, datetime, progname, msg|
 				(LogLevels[level] || '* ') + "#{msg}\n"
 			end
 		end
 
+		# Creates or returns the Logger instance
 		def self.log
 			return @log if @log
 			@log = Logger.new(STDOUT)
@@ -24,6 +27,7 @@ class Merlion
 			return @log
 		end
 
+		# Accessor for objects
 		def log
 			Merlion::Log.log
 		end
@@ -33,6 +37,5 @@ class Merlion
 				return log.send(level.to_sym, msg)
 			end
 		end
-
 	end
 end
