@@ -23,6 +23,7 @@ class Merlion
 			@pe = PokerEval.new
 		end
 
+		# Alias for hole_cards
 		def hole_str
 			@hole_cards
 		end
@@ -46,6 +47,7 @@ class Merlion
 			end
 		end
 
+		# @return [Boolean] Is the player out of chips?
 		def out?
 			@out
 		end
@@ -75,50 +77,61 @@ class Merlion
 			return @acted
 		end
 
+		# @return [Array[Merlion::Player]] Other players that are still active in the hand
 		def other_active_players
 			game.active_players.select {|p| p != self}
 		end
 
+		# @return [Integer] Number of players that have folded in this hand
 		def num_players_folded
 			return game.players.select{|p| p.folded?}.size
 		end
 
+		# @return [Boolean] Have any other players folded in this hand?
 		def others_have_folded?
 			return num_players_folded > 0
 		end
 
-		# Returns the immediate pot odds for their current action
+		# @return [Float] The immediate pot odds for their current action
 		def pot_odds
 			return nil if to_call == 0
 			return (to_call.to_f / (game.pot + to_call))
 		end
 
-		# Can this player still act?
+		# @return [Boolean] Can this player still act?
 		def active?
 			return !out? && !all_in? && !folded?
 		end
 
-		# Can this player win the pot?
+		# @return [Boolean] Can this player win the pot?
 		def eligible?
 			return !(out? || folded?)
 		end 
 
+		# @return [Boolean] Is this player still active and finished the current
+		# round of betting?
 		def active_and_finished?
 			return active? && finished_round?
 		end
 
+		# @return [Boolean] Has the player finished the current round of betting?
 		def finished_round?
 			return acted? && called_enough?
 		end
 
+		# @return [Boolean] Has the player called enough to stay in this round?
 		def called_enough?
 			return (put_in_this_round == @game.current_bet)
 		end
 
+		# @return [Boolean] Is the player all in?
 		def all_in?
 			return (@stack == 0)
 		end
 
+		# Commits a bet to the pot
+		#
+		# @param amount [Float] The amount to bet 
 		def bet(amount)
 			if (stack > amount) 
 				to_put_in = amount
@@ -129,31 +142,38 @@ class Merlion
 			self.put_in_this_round += to_put_in
 		end
 
+		# @return [Float] The amount the player has to call to stay in the hand
 		def to_call
 			return @game.current_bet - self.put_in_this_round
 		end
 		
+		# @return [Integer] The amount to call as a multiple of small bets
 		def small_bets_to_call
 			return (to_call / game.small_blind)
 		end
 
+		# @return [Integer] The number of bets to call
 		def bets_to_call
 			return (to_call / game.minimum_bet)
 		end
 
+		# @return [Boolean] Is there just one bet to call?
 		def one_bet_to_call
 			return bets_to_call == 1
 		end
 
+		# @return [Boolean] Has the player bet in this round?
 		def has_bet_this_round?
 			return (put_in_this_round > 0)
 		end
 
+		# Player checks
 		def check
 			@acted = true
 			@last_action = :check
 		end
 
+		# Fold if there is a bet to call, otherwise check
 		def check_or_fold
 			if to_call == 0
 				return check
@@ -211,34 +231,43 @@ class Merlion
 			@last_action = :blind
 		end
 
+		#TODO fix logic
+		# @return [Boolean] Is the player in late position?
 		def is_late_position?
 			return (@seats_from_dealer >= (game.num_players - (game.num_players / 3)))
 		end
 
+		# @return [Boolean] Is the player in early position?
 		def is_early_position?
 			return (@seats_from_dealer <= (game.num_players / 3))
 		end
 
+		# @return [Boolean] Is the player in middle position?
 		def is_middle_position?
 			return (!is_late_position? && !is_early_position?)
 		end
 
+		# @return [String] The name of the player
 		def to_s
 			return name
 		end
 
+		# @return [String] Some detail about the player
 		def inspect
 			return "#{self.object_id} #{self.class} [#{name}/#{stack}/#{active?} #{hole_str}]"
 		end
 
+		# @return [Integer] The sklansky group for the player's hole cards
 		def sklansky_group
 			return pe.hand_to_sklansky_group(hole_str)
 		end
 
+		# @return [Boolean] Does the player have an Ace?
 		def has_ace?
 			return hole_str.include?('A')
 		end
 
+		# @return [Boolean] Does the player have a pocket pair?
 		def has_pocket_pair?
 			(card1, card2) = hole_str.gsub(/[hcsd]/, '').split(//)
 			return card1 == card2
@@ -290,10 +319,12 @@ class Merlion
 			self.has_quit = true
 		end
 
+		# @return [Array[String]] The hole cards as an array
 		def hole_cards_ary
 			return hole_cards.scan(/../)
 		end
 
+		# @return [Hash] A hash representation of the basic player state
 		def to_hash
 			hash = {}
 			hash[:name] = name
@@ -310,10 +341,12 @@ class Merlion
 			hash[:cards] = hole_cards_ary
 		end
 
+		# @return [String] The type of the hand the player currently holds
 		def hand_type
 			return pe.type_hand(hole_cards, game.board_cards)
 		end
 
+		# @return [Float] The current hand strength
 		def hand_strength
 			return pe.str_to_hs(hole_cards, game.board_cards) 
 		end
