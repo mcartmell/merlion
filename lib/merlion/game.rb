@@ -85,7 +85,7 @@ class Merlion
 			return @players.select {|p| p != nil}
 		end 
 
-		# @return [Integr] The number of players currently seated in the game
+		# @return [Integer] The number of players currently seated in the game
 		def num_seated_players
 			return seated_players.size
 		end

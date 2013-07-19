@@ -4,6 +4,7 @@ require 'merlion/log'
 require 'merlion/bot'
 require 'merlion/config'
 
+# A Poker server written in Ruby
 class Merlion
 	# Represents a poker 'lobby'. Consists of multiple games, and handles the adding/removing of players to these games.
 	class Lobby
@@ -11,6 +12,7 @@ class Merlion
 		include Merlion::Log
 		attr_accessor :games
 
+		# Constructor
 		def initialize
 			@games = {}
 		end
@@ -29,7 +31,7 @@ class Merlion
 
 		# @param game_id [Integer] The game id to add a player to
 		# @param name [String] The nme of the player
-		# @param [Merlion::Connection] The connection object to associate with this player
+		# @param conn [Merlion::Connection] The connection object to associate with this player
 		def add_player_to_game(game_id, name, conn)
 			game = games[game_id]
 			unless game
