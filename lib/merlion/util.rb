@@ -1,5 +1,6 @@
 require 'colorize'
 class Merlion
+	# A collection of helper methods
 	module Util
 		# ActionMap maps player input to actions, which might not actually be correct
 		ActionMap = {
@@ -23,6 +24,7 @@ class Merlion
 			:fold => 'f'
 		}
 
+		# Converts a symbol into a true single-character representation, used to store hand history
 		def action_to_db(sym)
 			return ActionToDb[sym]
 		end
