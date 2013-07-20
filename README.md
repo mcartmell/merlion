@@ -15,6 +15,6 @@ You can see it in action, and play against Merlion bots, here: http://poker.mike
 # TODO
 
 * Handle split pots correctly
-* Record betting history for current hand
-* Record all games in database
-* No Limit ages
+* No Limit games
+* Simple bots for self-play benchmarking
+* TCP server and support for connecting to our own server as a client

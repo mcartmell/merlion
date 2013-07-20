@@ -21,5 +21,15 @@ Merlion::ConfigFile = {
 			bot_players: 5,
 			name: "5 merlions 10-max"
 		},
+		{
+			num_players: 4,
+			min_players: 3,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 1,
+				'Merlion::CallBot' => 3
+			},
+			name: "bench-callbot"
+		}
 	]
 }

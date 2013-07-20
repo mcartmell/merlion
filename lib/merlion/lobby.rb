@@ -2,6 +2,7 @@ require 'eventmachine'
 require 'merlion/game/local'
 require 'merlion/log'
 require 'merlion/bot'
+require 'merlion/agent/callbot'
 require 'merlion/config'
 
 # A Poker server written in Ruby
@@ -21,8 +22,17 @@ class Merlion
 		def create_games_from_config
 			conf[:games].each do |settings|
 				game = Merlion::Game::Local.new(settings)
-				settings[:bot_players].downto(1) do |i|
-					game.add_player({ class: Merlion::Bot, name: "Merlion #{i}"})
+				bot_players = settings[:bot_players]
+				if bot_players.instance_of?(Hash)
+					bot_players.each do |klass, count|
+						count.downto(1) do |i|
+							game.add_player({ class: eval(klass), name: "#{klass.gsub(/::/,'_')} #{i}" })
+						end
+					end
+				else
+					settings[:bot_players].downto(1) do |i|
+						game.add_player({ class: Merlion::Bot, name: "Merlion #{i}"})
+					end
 				end
 				game.start
 				games[game.table_id] = game
@@ -80,10 +90,13 @@ class Merlion
 			# Players can use any of these.
 			EventMachine.run do
 				create_games_from_config
-				EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)
 				EM.open_keyboard(Merlion::Lobby::KeyboardHandler, self)
-				Merlion::Lobby::WebSocketServer.instance.init(self)
-				Merlion::Lobby::WebSocketServer.instance.start_server
+				begin
+					EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)
+					Merlion::Lobby::WebSocketServer.instance.init(self)
+					Merlion::Lobby::WebSocketServer.instance.start_server
+				rescue
+				end
 				#EM.next_tick { tick }
 			end
 		end

@@ -455,7 +455,6 @@ class Merlion
 		# Called after a player has finished acting. May change the stage or end
 		# the hand if necessary, otherwise changes to next player
 		def player_finished
-			debug("Player finished")
 			self.last_player_to_act = current_player
 			player_moved
 
@@ -535,8 +534,8 @@ class Merlion
 			db.transaction do |db|
 				actions = current_hand_history.flatten.map{|sym| action_to_db(sym).to_s}.join('')
 				db.execute('insert into games(dealer, actions, small_blind, big_blind,
-				pot, board_cards) values(?,?,?,?,?,?)', dealer, actions, small_blind,
-				big_blind, pot, board_cards)
+				pot, board_cards, table_id, table_name) values(?,?,?,?,?,?,?,?)', dealer, actions, small_blind,
+				big_blind, pot, board_cards, table_id, name)
 				game_id = db.last_insert_row_id
 				players.each do |p|
 					won = p.stack - p.starting_stack
@@ -548,6 +547,7 @@ class Merlion
 		def set_initial_state!
 		end
 
+		# @return [String] The name of the current stage
 		def stage
 			begin
 				return Stages[self.stage_num]
@@ -556,6 +556,7 @@ class Merlion
 			end
 		end
 
+		# @return [Integer] The id of the current table
 		def table_id
 			object_id
 		end
