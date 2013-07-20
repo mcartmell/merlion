@@ -327,7 +327,7 @@ class Merlion
 		# @return [Hash] A hash representation of the basic player state
 		def to_hash
 			hash = {}
-			hash[:name] = name
+			hash[:name] = name.gsub(/.+_/, '')
 			hash[:seat] = seat
 			hash[:stack] = stack
 			hash[:put_in] = put_in_this_round

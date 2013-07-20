@@ -583,7 +583,7 @@ class Merlion
 			return hash
 		end
 
-		# @return [Hash] The game state (including players) as a hash
+		# @return [Hash] The game state (including players) as a hash
 		def to_hash_full
 			h = to_hash
 			h[:players] = players.map{|p| p.to_hash}

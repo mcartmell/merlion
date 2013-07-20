@@ -60,7 +60,7 @@ class Merlion
 
 			# Remove the player from all active games.
 			def remove_from_all_tables
-				return if @players.empty?
+				return if !@players || @players.empty?
 				@players.values.each do |p|
 					p.quit
 				end

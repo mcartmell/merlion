@@ -9,9 +9,12 @@ Merlion::ConfigFile = {
 		},
 		{
 			num_players: 6, 
-			min_players: 4,
+			min_players: 5,
 			stack: 1000,
-			bot_players: 3,
+			bot_players: {
+				'Merlion::Bot' => 3,
+				'Merlion::SimpleBot' => 1,
+			},
 			name: "3 merlions 6-max"
 		},
 		{
@@ -56,16 +59,18 @@ Merlion::ConfigFile = {
 			enabled: false
 		},
 		{
-			num_players: 4,
+			num_players: 6,
 			min_players: 4,
 			stack: 1000,
 			bot_players: {
 				'Merlion::Bot' => 1,
+				'Merlion::BotNoAI' => 1,
 				'Merlion::SimpleBot' => 1,
 				'Merlion::CallBot' => 1,
 				'Merlion::SimpleBotLoose' => 1,
 			},
-			name: "bench-multi"
+			name: "bench-multi",
+			#enabled: false
 		}
 	]
 }
