@@ -135,7 +135,6 @@ class Merlion
 			unless self.dealer
 				self.dealer = get_first_dealer
 			end
-			debug ("Starting hand")
 			self.stage_num = 0
 			self.pot = 0
 			self.current_bet = 0
@@ -302,6 +301,7 @@ class Merlion
 		# Broadcasts a 'stage changed' event to all players
 		def stage_changed
 			send_each_player(:stage_changed)
+			p self
 		end
 
 		# @param player [Integer] The seat of the player putting in the pot
@@ -486,7 +486,6 @@ class Merlion
 
 		# Called after a hand has finished to resolve the winner
 		def hand_finished
-			debug("Hand finished")
 			# one winner, reward them
 			winners = []
 			if (num_active_players == 1)
@@ -500,6 +499,7 @@ class Merlion
 			end
 
 			winners.each do |w|
+				debug("#{w[0].name} wins #{w[1]}")
 				w[0].stack += w[1]
 			end
 

@@ -29,7 +29,43 @@ Merlion::ConfigFile = {
 				'Merlion::Bot' => 1,
 				'Merlion::CallBot' => 3
 			},
-			name: "bench-callbot"
+			name: "bench-callbot",
+			enabled: false
+		},
+		{
+			num_players: 4,
+			min_players: 3,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 1,
+				'Merlion::CallBot' => 1,
+				'Merlion::SimpleBot' => 1
+			},
+			name: "bench-basic",
+			enabled: false
+		},
+		{
+			num_players: 4,
+			min_players: 4,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 2,
+				'Merlion::SimpleBot' => 2
+			},
+			name: "bench-2v2",
+			enabled: false
+		},
+		{
+			num_players: 4,
+			min_players: 4,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 1,
+				'Merlion::SimpleBot' => 1,
+				'Merlion::CallBot' => 1,
+				'Merlion::SimpleBotLoose' => 1,
+			},
+			name: "bench-multi"
 		}
 	]
 }

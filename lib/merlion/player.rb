@@ -94,7 +94,7 @@ class Merlion
 
 		# @return [Float] The immediate pot odds for their current action
 		def pot_odds
-			return nil if to_call == 0
+			return 0 if to_call == 0
 			return (to_call.to_f / (game.pot + to_call))
 		end
 

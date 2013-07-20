@@ -3,6 +3,7 @@ require 'merlion/game/local'
 require 'merlion/log'
 require 'merlion/bot'
 require 'merlion/agent/callbot'
+require 'merlion/agent/simplebot'
 require 'merlion/config'
 
 # A Poker server written in Ruby
@@ -21,6 +22,8 @@ class Merlion
 			# Creates Game objects according to the config file. Also creates any Bot players if necessary and adds them to the game. Then it calls start, which begins the main_loop Fiber
 		def create_games_from_config
 			conf[:games].each do |settings|
+				debug("Creating #{settings[:name]}")
+				next unless (!settings.has_key?(:enabled) || settings[:enabled])
 				game = Merlion::Game::Local.new(settings)
 				bot_players = settings[:bot_players]
 				if bot_players.instance_of?(Hash)

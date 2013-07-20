@@ -24,6 +24,7 @@ class Merlion
 				sbh = (tots[:total_score] / num_hands / bb)
 				tots[:sbh] = sbh
 			end
+			puts "From #{num_hands} hands:"
 			player_totals.sort_by{|k, v| v[:sbh]}.reverse.each do |name, v|
 				puts "#{name}: #{v[:sbh]}"
 			end
