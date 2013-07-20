@@ -104,7 +104,6 @@ class Merlion
 			type = opts[:class] || self.default_player_class
 			opts[:stack] ||= self.default_stack
 			opts[:game] = self
-			puts type
 			obj = type.new(opts)
 			return obj
 		end
@@ -301,7 +300,7 @@ class Merlion
 		# Broadcasts a 'stage changed' event to all players
 		def stage_changed
 			send_each_player(:stage_changed)
-			p self
+			#p self
 		end
 
 		# @param player [Integer] The seat of the player putting in the pot
@@ -475,6 +474,7 @@ class Merlion
 
 		# Records a single action for the last player's moved
 		def record_last_action
+			return unless self.stage_num
 			act = last_player.last_action
 			(self.current_hand_history[self.stage_num] ||= []).push(act)
 		end

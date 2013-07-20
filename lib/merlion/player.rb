@@ -231,15 +231,25 @@ class Merlion
 			@last_action = :blind
 		end
 
+		def is_dealer?
+			return (seat == game.dealer)
+		end
+
 		#TODO fix logic
 		# @return [Boolean] Is the player in late position?
 		def is_late_position?
-			return (@seats_from_dealer >= (game.num_players - (game.num_players / 3)))
+			return true if is_dealer?
+			if game.num_players > 4
+				return (@seats_from_dealer >= (game.num_players - (game.num_players / 3)))
+			end
+			return false
 		end
 
 		# @return [Boolean] Is the player in early position?
 		def is_early_position?
-			return (@seats_from_dealer <= (game.num_players / 3))
+			sfd = @seats_from_dealer
+			return false if is_dealer?
+			return (sfd <= 3)
 		end
 
 		# @return [Boolean] Is the player in middle position?
