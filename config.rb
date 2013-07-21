@@ -70,7 +70,7 @@ Merlion::ConfigFile = {
 				'Merlion::SimpleBotLoose' => 1,
 			},
 			name: "bench-multi",
-			#enabled: false
+			enabled: false
 		}
 	]
 }

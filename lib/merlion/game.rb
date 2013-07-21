@@ -208,6 +208,7 @@ class Merlion
 				newplayers[i] = p.clone
 				newplayers[i].game = newgame
 			end
+			newgame.players = newplayers
 			return newgame
 		end
 

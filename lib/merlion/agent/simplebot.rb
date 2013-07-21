@@ -15,7 +15,7 @@ class Merlion
 
 		# Picks an action from a triplet
 		def act_triplet(probs)
-			tot = 0
+			tot = 0.0
 			trip = probs.map{|e| tot += e; tot.to_f.round(3)}
 			rnd = Random.rand(tot)
 			return :check_or_fold if rnd <= trip[0]

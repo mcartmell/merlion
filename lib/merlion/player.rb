@@ -11,7 +11,7 @@ class Merlion
 		attr_accessor :stack, :starting_stack
 		attr_accessor :seats_from_dealer, :last_action
 
-		# Constructor
+		# Constructor
 		def initialize(opts = {}) 
 			@stack = opts[:stack]
 			@game = opts[:game]
@@ -85,6 +85,14 @@ class Merlion
 		# @return [Integer] Number of players that have folded in this hand
 		def num_players_folded
 			return game.players.select{|p| p.folded?}.size
+		end
+
+		def num_players_acted
+			return game.active_players.select{|p| p.acted?}.size
+		end
+
+		def num_players_to_act
+			return game.active_players.select{|p| p.still_to_act?}.size
 		end
 
 		# @return [Boolean] Have any other players folded in this hand?
@@ -235,7 +243,6 @@ class Merlion
 			return (seat == game.dealer)
 		end
 
-		#TODO fix logic
 		# @return [Boolean] Is the player in late position?
 		def is_late_position?
 			return true if is_dealer?
@@ -359,6 +366,27 @@ class Merlion
 		# @return [Float] The current hand strength
 		def hand_strength
 			return pe.str_to_hs(hole_cards, game.board_cards) 
+		end
+
+		# @return [Float] The effective hand strength
+		def effective_hand_strength
+			return pe.effective_hand_strength(hole_cards, game.board_cards) 
+		end
+
+		def heads_up?
+			return (game.num_active_players == 2)
+		end
+		
+		def last_action_was_bet?
+			return (last_action == :bet || last_action == :raise)
+		end
+
+		def first_to_act?
+			return (num_players_acted == 0)
+		end
+
+		def last_to_act?
+			return (num_players_to_act == 1)
 		end
 	end
 
