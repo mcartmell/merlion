@@ -71,6 +71,28 @@ Merlion::ConfigFile = {
 			},
 			name: "bench-multi",
 			enabled: false
+		},
+		{
+			num_players: 2,
+			min_players: 2,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 1,
+				'Merlion::CallBot' => 1,
+			},
+			name: 'bench-hup',
+			enabled: false
+		},
+		{
+			num_players: 6,
+			min_players: 6,
+			stack: 1000,
+			bot_players: {
+				'Merlion::Bot' => 1,
+				'Merlion::SimpleBot' => 5,
+			},
+			name: 'bench-sbot',
+			enabled: false
 		}
 	]
 }
