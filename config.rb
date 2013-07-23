@@ -81,7 +81,7 @@ Merlion::ConfigFile = {
 				'Merlion::CallBot' => 1,
 			},
 			name: 'bench-hup',
-			enabled: false
+			enabled: true
 		},
 		{
 			num_players: 6,

@@ -1,4 +1,5 @@
 require 'colorize'
+require 'ruby-prof'
 class Merlion
 	# A collection of helper methods
 	module Util
@@ -53,6 +54,16 @@ class Merlion
 				raise "Unknown action '#{sym}'"
 			end
 			return act
+		end
+
+		def profile
+			RubyProf.start
+			yield
+			res = RubyProf.stop
+			printer = RubyProf::GraphHtmlPrinter.new(res)
+			File.open('profile.html', 'w') do |file|
+				printer.print(file)
+			end
 		end
 
 	end
