@@ -78,7 +78,7 @@ Merlion::ConfigFile = {
 			stack: 1000,
 			bot_players: {
 				'Merlion::Bot' => 1,
-				'Merlion::CallBot' => 1,
+				'Merlion::BotNoAI' => 1,
 			},
 			name: 'bench-hup',
 			enabled: true
