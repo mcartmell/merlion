@@ -1,5 +1,4 @@
 require 'merlion/player'
-require 'merlion/bot'
 require 'merlion/log'
 require 'merlion/db'
 require 'merlion/util'
@@ -188,7 +187,7 @@ class Merlion
 			case stage
 			when :preflop
 				deal_preflop_cards
-				players.each {|p| p.hole_cards_received}
+				send_each_player(:hole_cards_received)
 			when :flop
 				deal_three_board_cards
 			when :turn
@@ -500,7 +499,6 @@ class Merlion
 			end
 
 			winners.each do |w|
-				debug("#{w[0].name} wins #{w[1]}")
 				w[0].stack += w[1]
 			end
 
