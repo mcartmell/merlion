@@ -1,7 +1,13 @@
 class Merlion
 	class Game
-		module Simulation
+		class Simulation < Merlion::Game
 			include Merlion::Log
+			attr_reader :wt_cache
+
+			def initialize(*a)
+				super
+				@wt_cache = {}
+			end
 
 			# Run until game has finished
 			def run_once(predictors)
@@ -27,13 +33,22 @@ class Merlion
 			end
 
 			def get_representative_hand(wt)
-				tot = 0.0
-				probs = []
-				wt.each do |k, v|
-					tot += v
-					probs.push([k, tot.to_f.round(3)])
+				wtprobs = wt_cache[wt.object_id]
+				unless wtprobs
+					tot = 0.0
+					probs = []
+					wt.each do |k, v|
+						tot += v
+						probs.push([k, tot])
+					end
+					wtprobs = [probs, tot]
+					wt_cache[wt.object_id] = wtprobs
 				end
-				rnd = Random.rand(tot.to_f)
+
+				probs = wtprobs[0]
+				tot = wtprobs[1]
+
+				rnd = Random.rand(tot)
 				last = nil
 				probs.each do |e|
 					if (rnd <= e[1])
@@ -67,6 +82,17 @@ class Merlion
 
 			def deal_cards
 				deal_cards_orig
+			end
+
+			def have_enough_players?
+				true
+			end
+
+			def num_players
+				players.size
+			end
+
+			def record_hand_history
 			end
 
 			def player_moved

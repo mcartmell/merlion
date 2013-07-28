@@ -1,3 +1,5 @@
+require 'forwardable'
+require 'merlion/gamestate'
 require 'merlion/player'
 require 'merlion/log'
 require 'merlion/db'
@@ -8,14 +10,20 @@ require 'colorize'
 class Merlion
 	# Represents a basic game of hold'em.
 	class Game
+		extend Forwardable
+
 		include Merlion::Log
 		include Merlion::Util
 		include Merlion::DB
-		attr_accessor :small_blind, :big_blind, :num_players, :current_bet, :pot, :board_cards, :dealer, :stage_num, :current_player, :players, :last_player_to_act, :game_id, :min_players, :current_hand_history, :last_winners, :name
+		attr_accessor :num_players, :game_id, :min_players, :current_hand_history, :last_winners, :name, :last_player_to_act
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class, :default_stack, :player_delay
+		attr_accessor :game_state
+
+		def_delegators :@game_state, :small_blind, :small_blind=, :big_blind, :big_blind=, :current_bet, :current_bet=, :pot, :pot=, :board_cards, :board_cards=, :dealer, :dealer=, :stage_num, :stage_num=, :current_player, :current_player=, :players, :players=
 
 		Stages = [:preflop, :flop, :turn, :river, :game_finished]
+
 		# The main loop. Should not need to be overridden
 		def main_loop
 			loop do
@@ -31,6 +39,7 @@ class Merlion
 		# Sets up the PokerEval object
 		def initialize(opts = {})
 			@pe = PokerEval.new
+			@game_state = Merlion::GameState.new
 		end
 
 		# Initializes the game to a given state. Can be used when the state of the
@@ -50,24 +59,25 @@ class Merlion
 			}
 			opts = default.merge(opts)
 
-			@small_blind = opts[:small_blind]
-			@big_blind = opts[:big_blind]
+			self.small_blind = opts[:small_blind]
+			self.big_blind = opts[:big_blind]
 			@num_players = opts[:num_players]
 			@min_players = opts[:min_players]
 			@player_delay = opts[:player_delay]
 			@default_stack = opts[:stack]
 			@name = opts[:name]
 
-			@current_player = 0
+			self.current_player = 0
 
 			@default_player_class = opts[:default_player_class]
 
 			@names = opts[:names]
 			@stacks = opts[:stacks] || [@default_stack] * @num_players
-			@players = []
-			@dealer = opts[:dealer] || get_first_dealer
 
-			@stage_num = nil
+			self.players = []
+			self.dealer = opts[:dealer] || get_first_dealer
+
+			self.stage_num = nil
 
 			create_players
 		end
@@ -75,13 +85,13 @@ class Merlion
 		# Creates the player objects
 		def create_players
 			@num_players.times do |i|
-				@players[i] = create_player({seat: i})
+				self.players[i] = create_player({seat: i})
 			end
 		end
 
 		# @return [Array[Merlion::Player]] The players that are currently seated in the game
 		def seated_players
-			return @players.select {|p| p != nil}
+			return self.players.select {|p| p != nil}
 		end 
 
 		# @return [Integer] The number of players currently seated in the game
@@ -202,18 +212,20 @@ class Merlion
 		# Clone this object, but clone the players too
 		def duplicate
 			newgame = self.clone
+			gamestate = self.game_state.clone
 			newplayers = []
 			newgame.players.each_with_index do |p, i|
 				newplayers[i] = p.clone
 				newplayers[i].game = newgame
 			end
+			newgame.game_state = gamestate
 			newgame.players = newplayers
 			return newgame
 		end
 
 		# @return [Integer] The seat number of the first dealer when starting a new game
 		def get_first_dealer
-			dealer = @current_player
+			dealer = self.current_player
 			return if players.empty?
 			loop do
 				dealer = prev_seat(dealer)
@@ -272,7 +284,7 @@ class Merlion
 
 		# @return [Integer] The seat of the player to act first
 		def first_to_act
-			return heads_up? ? @dealer : next_notout_seat(@dealer)
+			return heads_up? ? self.dealer : next_notout_seat(self.dealer)
 		end
 
 		# @return [Boolean] Is this a heads-up game?
@@ -306,10 +318,10 @@ class Merlion
 		# @param player [Integer] The seat of the player putting in the pot
 		# @param amount [Float] The size of the bet
 		def put_in_pot(player, amount)
-			@pot += amount
+			self.pot += amount
 			player.stack -= amount
-			if (player.put_in_this_round + amount > @current_bet)
-				@current_bet = player.put_in_this_round + amount
+			if (player.put_in_this_round + amount > self.current_bet)
+				self.current_bet = player.put_in_this_round + amount
 			end
 		end
 
@@ -329,7 +341,7 @@ class Merlion
 		# @return [Integer] The next seat to act 
 		def next_seat(i = nil, times = 1, exclude_out = true)
 			return unless times
-			seat = i || @current_player
+			seat = i || self.current_player
 			count = 0
 			loop do
 				seat = seat + 1
@@ -346,20 +358,20 @@ class Merlion
 
 		# Like next_seat, but in reverse
 		def prev_seat(i = nil, times = 1)
-			seat = i || @current_player
+			seat = i || self.current_player
 			times.times do
 				seat = seat - 1
-				seat = (@players.size - 1) if seat < 0
+				seat = (self.players.size - 1) if seat < 0
 			end
 			return seat
 		end
 
 		def cycle_seats(start = nil, exclude_out = true)
-			start = @current_player unless start
+			start = self.current_player unless start
 			seat = start
 			first_seat = seat
 			loop do
-				yield @players[seat], seat
+				yield self.players[seat], seat
 				seat = next_seat(seat, 1, exclude_out)
 				break if seat == first_seat
 			end
@@ -368,7 +380,7 @@ class Merlion
 
 		# @return [Integer] The seat number of the next dealer
 		def next_dealer
-			return next_notout_seat(@dealer)
+			return next_notout_seat(self.dealer)
 		end
 
 		# @return [Integer] The number of active players between the dealer and the
@@ -414,7 +426,7 @@ class Merlion
 
 		# @return [Array[Merlion::Player]]
 		def active_players
-			return @players.select{|p| p.active?}
+			return self.players.select{|p| p.active?}
 		end
 
 		# Changes state to the next stage.
@@ -432,7 +444,7 @@ class Merlion
 					player.acted = false
 				end
 				deal_cards
-				@current_player = next_player_to_act(first_to_act)
+				self.current_player = next_player_to_act(first_to_act)
 				stage_changed
 			end
 		end
@@ -489,7 +501,7 @@ class Merlion
 			# one winner, reward them
 			winners = []
 			if (num_active_players == 1)
-				winner = @players.find{|p| p.active?}
+				winner = self.players.find{|p| p.active?}
 				winners.push([winner, self.pot])
 			else
 				winp = active_players.select{|p| !p.hole_cards.empty?}.group_by{|p| pe.score_hand(p.hole_str, board_str)}
