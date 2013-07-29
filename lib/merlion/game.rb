@@ -213,6 +213,9 @@ class Merlion
 		def duplicate
 			newgame = self.clone
 			gamestate = self.game_state.duplicate
+			gamestate.players.each do |p|
+				p.game = self
+			end
 			newgame.game_state = gamestate
 			return newgame
 		end
