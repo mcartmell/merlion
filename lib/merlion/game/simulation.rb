@@ -32,6 +32,11 @@ class Merlion
 				return move
 			end
 
+			def hand_finished
+				determine_winners
+				finalize_hand
+			end
+
 			def get_representative_hand(wt)
 				wtprobs = wt_cache[wt.object_id]
 				unless wtprobs
@@ -74,10 +79,6 @@ class Merlion
 				define_method(newmethod) do
 					mgmeth.bind(self).call
 				end
-			end
-
-			def hand_finished
-				hand_finished_orig
 			end
 
 			def deal_cards

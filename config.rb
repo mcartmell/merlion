@@ -63,14 +63,15 @@ Merlion::ConfigFile = {
 			min_players: 4,
 			stack: 1000,
 			bot_players: {
-				'Merlion::Bot' => 1,
+				'Merlion::BotNoNoise' => 1,
 				'Merlion::BotNoAI' => 1,
 				'Merlion::SimpleBot' => 1,
 				'Merlion::CallBot' => 1,
 				'Merlion::SimpleBotLoose' => 1,
+				'Merlion::BotLessNoise' => 1,
 			},
-			name: "bench-multi2",
-			enabled: true
+			name: "bench-multi3",
+			enabled: false
 		},
 		{
 			num_players: 2,

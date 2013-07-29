@@ -212,14 +212,8 @@ class Merlion
 		# Clone this object, but clone the players too
 		def duplicate
 			newgame = self.clone
-			gamestate = self.game_state.clone
-			newplayers = []
-			newgame.players.each_with_index do |p, i|
-				newplayers[i] = p.clone
-				newplayers[i].game = newgame
-			end
+			gamestate = self.game_state.duplicate
 			newgame.game_state = gamestate
-			newgame.players = newplayers
 			return newgame
 		end
 
@@ -496,8 +490,7 @@ class Merlion
 			return current_hand_history[stage_num]
 		end
 
-		# Called after a hand has finished to resolve the winner
-		def hand_finished
+		def determine_winners
 			# one winner, reward them
 			winners = []
 			if (num_active_players == 1)
@@ -513,6 +506,11 @@ class Merlion
 			winners.each do |w|
 				w[0].stack += w[1]
 			end
+		end
+
+		# Called after a hand has finished to resolve the winner
+		def hand_finished
+			winners = determine_winners
 
 			self.last_winners = winners
 
@@ -522,9 +520,13 @@ class Merlion
 			# Send hand_finished notification
 			send_each_player(:hand_finished)
 
-			# Remoe any players that have disconnected
+			# Remove any players that have disconnected
 			remove_quit_players
 
+			finalize_hand
+		end
+
+		def finalize_hand
 			# set next dealer. should this be moved to hand_started?
 			if have_enough_players?
 				self.dealer = next_dealer
