@@ -1,3 +1,4 @@
+require 'pp'
 class Merlion
 	class Game
 		class Simulation < Merlion::Game
@@ -45,6 +46,7 @@ class Merlion
 
 			def get_representative_hand(wt)
 				wtprobs = wt_cache[wt.object_id]
+
 				unless wtprobs
 					puts "recalculating cache"
 					tot = 0.0

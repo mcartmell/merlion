@@ -71,7 +71,7 @@ Merlion::ConfigFile = {
 				'Merlion::BotLessNoise' => 1,
 			},
 			name: "bench-multi3",
-			enabled: false
+			enabled: true 
 		},
 		{
 			num_players: 2,
