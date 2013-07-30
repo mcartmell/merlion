@@ -1,6 +1,6 @@
 # Merlion
 
-Merlion is a poker server written in Ruby. It's a work in progress.
+Merlion is a poker server written in Ruby.
 
 It uses:
 
