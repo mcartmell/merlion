@@ -1,6 +1,8 @@
 require 'socket'
 require 'merlion/game'
 require 'merlion/log'
+require 'merlion/bot'
+
 class Merlion
 	class Game
 		# Represents a game where are are connected to a remote ACPC server.

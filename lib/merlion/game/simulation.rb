@@ -46,6 +46,7 @@ class Merlion
 			def get_representative_hand(wt)
 				wtprobs = wt_cache[wt.object_id]
 				unless wtprobs
+					puts "recalculating cache"
 					tot = 0.0
 					probs = []
 					wt.each do |k, v|
@@ -102,8 +103,6 @@ class Merlion
 			def record_hand_history
 			end
 
-			def player_moved
-			end
 			def send_each_player(*a)
 			end
 			def stage_changed

@@ -214,7 +214,7 @@ class Merlion
 			newgame = self.clone
 			gamestate = self.game_state.duplicate
 			gamestate.players.each do |p|
-				p.game = self
+				p.game = newgame
 			end
 			newgame.game_state = gamestate
 			newgame.last_winners = last_winners.clone if last_winners
@@ -316,7 +316,6 @@ class Merlion
 		# @param player [Integer] The seat of the player putting in the pot
 		# @param amount [Float] The size of the bet
 		def put_in_pot(player, amount)
-			puts "pot is #{pot}"
 			self.pot += amount
 			player.stack -= amount
 			if (player.put_in_this_round + amount > self.current_bet)
@@ -547,11 +546,16 @@ class Merlion
 			players.each(&sym)
 		end
 
+		def flat_history
+			actions = current_hand_history.flatten.map{|sym| action_to_db(sym).to_s}.join('')
+			actions
+		end
+
 		# Record the game in the database. Saves the cards, player names, seats and amounts won
 		# Should be enough to calculate a high score table, but also replay the games if needed
 		def record_hand_history
 			db.transaction do |db|
-				actions = current_hand_history.flatten.map{|sym| action_to_db(sym).to_s}.join('')
+				actions = flat_history
 				db.execute('insert into games(dealer, actions, small_blind, big_blind,
 				pot, board_cards, table_id, table_name) values(?,?,?,?,?,?,?,?)', dealer, actions, small_blind,
 				big_blind, pot, board_cards, table_id, name)

@@ -14,6 +14,7 @@ class Merlion
 		InvertedActionMap = ActionMap.invert
 		InvertedActionMap.merge!({
 			check_or_fold: 'f',
+			fold: 'f'
 		})
 		# This maps actions to true single-character representations
 		ActionToDb = {
