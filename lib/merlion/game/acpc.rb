@@ -92,7 +92,7 @@ class Merlion
 			def create_players
 				num_players.times do |i|
 					player_class = Merlion::Player
-					@players[i] = create_player({ seat: i, class: player_class })
+					self.players[i] = create_player({ seat: i, class: player_class })
 				end
 			end
 
@@ -143,8 +143,8 @@ class Merlion
 					# deal out the cards
 					hole_cards.split('|').each_with_index do |elem, i|
 						# index is seat relative to dealer
-						pseat = next_notout_seat(@dealer, i + 1)
-						player = @players[pseat]
+						pseat = next_notout_seat(self.dealer, i + 1)
+						player = self.players[pseat]
 						player.hole_cards = elem || ''
 					end
 					self.board_cards = board_cards.split('/').join('')
