@@ -9,6 +9,12 @@ class Merlion
 				@wt_cache = {}
 			end
 
+			def self.from_game_state(gs)
+				this = self.new
+				this.game_state = gs.duplicate
+				this
+			end
+
 			# Run until game has finished
 			def run_once(predictors)
 				loop do

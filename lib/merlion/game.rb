@@ -217,6 +217,7 @@ class Merlion
 				p.game = self
 			end
 			newgame.game_state = gamestate
+			newgame.last_winners = last_winners.clone if last_winners
 			return newgame
 		end
 
@@ -315,6 +316,7 @@ class Merlion
 		# @param player [Integer] The seat of the player putting in the pot
 		# @param amount [Float] The size of the bet
 		def put_in_pot(player, amount)
+			puts "pot is #{pot}"
 			self.pot += amount
 			player.stack -= amount
 			if (player.put_in_this_round + amount > self.current_bet)
@@ -509,6 +511,7 @@ class Merlion
 			winners.each do |w|
 				w[0].stack += w[1]
 			end
+			winners
 		end
 
 		# Called after a hand has finished to resolve the winner
