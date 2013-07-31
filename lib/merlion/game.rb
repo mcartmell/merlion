@@ -40,7 +40,6 @@ class Merlion
 		def initialize(opts = {})
 			@pe = PokerEval.new
 			@game_state = Merlion::GameState.new
-			@game_id = 1
 		end
 
 		# Initializes the game to a given state. Can be used when the state of the
@@ -144,7 +143,6 @@ class Merlion
 			unless self.dealer
 				self.dealer = get_first_dealer
 			end
-			self.game_id += 1
 			self.stage_num = 0
 			self.pot = 0
 			self.current_bet = 0

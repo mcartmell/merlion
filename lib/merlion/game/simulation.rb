@@ -48,10 +48,10 @@ class Merlion
 				wtprobs = wt_cache[wt.object_id]
 
 				unless wtprobs
-					puts "recalculating cache"
+					wt_sorted = wt.sort.drop(wt.size * 0.9)
 					tot = 0.0
 					probs = []
-					wt.each do |k, v|
+					wt_sorted.each do |k, v|
 						tot += v
 						probs.push([k, tot])
 					end
@@ -63,7 +63,8 @@ class Merlion
 				tot = wtprobs[1]
 
 				unless tot > 0
-					p wt
+					cards = probs.shuffle.first
+					return pe.mask_to_str(cards[0])
 				end
 
 				rnd = Random.rand(tot)

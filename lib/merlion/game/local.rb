@@ -20,6 +20,7 @@ class Merlion
 					main_loop
 				end
 				@waiting_players = []
+				@game_id = 0
 				set_initial_state!(opts)
 			end
 
@@ -27,6 +28,7 @@ class Merlion
 			def start_hand
 				loop do
 					hand_started = super
+					self.game_id += 1
 					break if hand_started
 					Fiber.yield
 				end
