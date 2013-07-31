@@ -62,6 +62,10 @@ class Merlion
 				probs = wtprobs[0]
 				tot = wtprobs[1]
 
+				unless tot > 0
+					p wt
+				end
+
 				rnd = Random.rand(tot)
 				last = nil
 				probs.each do |e|
