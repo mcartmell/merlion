@@ -3,6 +3,7 @@ class Merlion
 	class Game
 		class Simulation < Merlion::Game
 			include Merlion::Log
+			include Merlion::Config
 			attr_reader :wt_cache
 
 			def initialize(*a)
@@ -48,7 +49,7 @@ class Merlion
 				wtprobs = wt_cache[wt.object_id]
 
 				unless wtprobs
-					wt_sorted = wt.sort.drop(wt.size * 0.9)
+					wt_sorted = wt.sort.drop(wt.size * config.simulation_fear)
 					tot = 0.0
 					probs = []
 					wt_sorted.each do |k, v|

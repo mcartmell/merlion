@@ -1,4 +1,5 @@
 Merlion::ConfigFile = {
+	simulation_fear: 0.9,
 	games: [
 		{
 			num_players: 2, 
@@ -66,11 +67,11 @@ Merlion::ConfigFile = {
 				'Merlion::FBSBot' => 1,
 				'Merlion::SimpleBot' => 1,
 				'Merlion::SimpleBotLoose' => 1,
-				'Merlion::Bot' => 1,
-				'Merlion::SBSBot' => 1,
+				'Merlion::CallBot' => 1,
+				'Merlion::Bot' => 1
 			},
-			name: "bench-multi3",
-			enabled: false
+			name: "bench-multi",
+			enabled: true
 		},
 		{
 			num_players: 2,
@@ -81,7 +82,7 @@ Merlion::ConfigFile = {
 				'Merlion::SimpleBot' => 1,
 			},
 			name: 'bench-hup',
-			enabled: true
+			enabled: false
 		},
 		{
 			num_players: 6,
