@@ -1,5 +1,5 @@
 Merlion::ConfigFile = {
-	simulation_fear: 0.9,
+	simulation_fear: 0.95,
 	games: [
 		{
 			num_players: 2, 
