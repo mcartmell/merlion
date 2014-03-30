@@ -1,0 +1,40 @@
+GIT
+  remote: https://github.com/tangledpath/ruby-fann.git
+  revision: 43021043caa80564be862d83423ee5c67165472b
+  tag: v1.2.5
+  specs:
+    ruby-fann (1.2.5)
+
+PATH
+  remote: /home/mikec/ruby/ruby-pokereval
+  specs:
+    pokereval (0.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.7.0)
+    em-websocket (0.5.0)
+      eventmachine (>= 0.12.9)
+      http_parser.rb (~> 0.5.3)
+    eventmachine (1.0.3)
+    ffi (1.9.3)
+    http_parser.rb (0.5.3)
+    lru_redux (0.8.1)
+    rasem (0.6.1)
+    ruby-prof (0.14.2)
+    sqlite3 (1.3.7)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  colorize
+  em-websocket
+  ffi
+  lru_redux
+  pokereval!
+  rasem
+  ruby-fann!
+  ruby-prof
+  sqlite3
