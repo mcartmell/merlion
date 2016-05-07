@@ -49,7 +49,11 @@ class Merlion
 				wtprobs = wt_cache[wt.object_id]
 
 				unless wtprobs
-					wt_sorted = wt.sort.drop(wt.size * config.simulation_fear)
+					# sort by most likely hands
+          # wt_sorted = wt.sort.drop(wt.size * config.simulation_fear)
+          # sort by best hands
+          wt_sorted = wt.each.sort_by{|k, v| pe.effective_hand_strength(pe.mask_to_str(k), board_str)[:ehs]}
+          wt_sorted = wt_sorted.drop(wt.size * config.simulation_fear)
 					tot = 0.0
 					probs = []
 					wt_sorted.each do |k, v|

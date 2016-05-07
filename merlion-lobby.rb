@@ -1,2 +1,2 @@
 require 'merlion/lobby'
-Merlion::Lobby.new.start
+Merlion::Lobby.new.start(config_file: ARGV.shift)

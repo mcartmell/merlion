@@ -8,3 +8,4 @@ gem 'ruby-fann', git: 'https://github.com/tangledpath/ruby-fann.git', tag: 'v1.2
 gem 'em-websocket'
 gem 'pokereval', path: '/home/mikec/ruby/ruby-pokereval'
 gem 'sqlite3'
+gem 'byebug'

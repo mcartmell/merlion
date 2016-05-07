@@ -1,3 +1,4 @@
+require 'byebug'
 require 'forwardable'
 require 'merlion/gamestate'
 require 'merlion/player'
@@ -18,7 +19,7 @@ class Merlion
 		attr_accessor :num_players, :game_id, :min_players, :current_hand_history, :last_winners, :name, :last_player_to_act
 		attr_reader :stacks, :names, :pe
 		attr_reader :default_player_class, :default_stack, :player_delay
-		attr_accessor :game_state
+		attr_accessor :game_state, :max_hands, :hands_played
 
 		def_delegators :@game_state, :small_blind, :small_blind=, :big_blind, :big_blind=, :current_bet, :current_bet=, :pot, :pot=, :board_cards, :board_cards=, :dealer, :dealer=, :stage_num, :stage_num=, :current_player, :current_player=, :players, :players=
 
@@ -27,12 +28,18 @@ class Merlion
 		# The main loop. Should not need to be overridden
 		def main_loop
 			loop do
+        puts "played #{hands_played} of #{max_hands} hands"
 				start_hand
 				loop do
 					move = get_next_move
 					process_move(move)
 					break if stage_num == nil
 				end
+        self.hands_played += 1
+        if self.hands_played == self.max_hands
+          puts "finished"
+          break
+        end
 			end
 		end
 
@@ -65,6 +72,7 @@ class Merlion
 			@min_players = opts[:min_players]
 			@player_delay = opts[:player_delay]
 			@default_stack = opts[:stack]
+      @max_hands = opts[:max_hands]
 			@name = opts[:name]
 
 			self.current_player = 0
@@ -78,6 +86,7 @@ class Merlion
 			self.dealer = opts[:dealer] || get_first_dealer
 
 			self.stage_num = nil
+      self.hands_played = 0
 
 			create_players
 		end

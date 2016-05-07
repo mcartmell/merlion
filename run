@@ -1,0 +1,2 @@
+#!/bin/sh
+bundle exec ruby -Ilib -I../merlion-bot/lib merlion-lobby.rb "$@"

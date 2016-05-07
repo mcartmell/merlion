@@ -20,7 +20,8 @@ class Merlion
 		end
 
 			# Creates Game objects according to the config file. Also creates any Bot players if necessary and adds them to the game. Then it calls start, which begins the main_loop Fiber
-		def create_games_from_config
+		def create_games_from_config(opts)
+      conf = Merlion::Config.read(opts[:config_file] ||  File.dirname(__FILE__)+'/../../config.rb')
 			conf[:games].each do |settings|
 				debug("Creating #{settings[:name]}")
 				next unless (!settings.has_key?(:enabled) || settings[:enabled])
@@ -88,11 +89,11 @@ class Merlion
 		end
 		
 		# Starts the servers that listen for new connections
-		def start
+		def start(opts={})
 			# Start listening on various protocols: keyboard, telnet and websocket.
 			# Players can use any of these.
 			EventMachine.run do
-				create_games_from_config
+				create_games_from_config(opts)
 				EM.open_keyboard(Merlion::Lobby::KeyboardHandler, self)
 				begin
 					EventMachine.start_server("0.0.0.0", 10000, Merlion::Lobby::TelnetServer, self)
