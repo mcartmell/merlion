@@ -10,7 +10,9 @@ class Merlion
 				else
 					post_flop
 			end
-			return act_triplet(probs)
+			move = act_triplet(probs)
+      info "[SimpleBot] #{move} - #{probs}"
+      move
 		end
 
 		# Picks an action from a triplet

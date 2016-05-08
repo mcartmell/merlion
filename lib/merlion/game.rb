@@ -18,7 +18,7 @@ class Merlion
 		include Merlion::DB
 		attr_accessor :num_players, :game_id, :min_players, :current_hand_history, :last_winners, :name, :last_player_to_act
 		attr_reader :stacks, :names, :pe
-		attr_reader :default_player_class, :default_stack, :player_delay
+		attr_reader :default_player_class, :default_stack, :player_delay, :record_games
 		attr_accessor :game_state, :max_hands, :hands_played
 
 		def_delegators :@game_state, :small_blind, :small_blind=, :big_blind, :big_blind=, :current_bet, :current_bet=, :pot, :pot=, :board_cards, :board_cards=, :dealer, :dealer=, :stage_num, :stage_num=, :current_player, :current_player=, :players, :players=
@@ -61,6 +61,7 @@ class Merlion
 				num_players: 10,
 				player_delay: 0,
 				last_winners: nil,
+        record_games: true,
 				stack: 200,
 				name: "Game #{table_id}" 
 			}
@@ -74,6 +75,7 @@ class Merlion
 			@default_stack = opts[:stack]
       @max_hands = opts[:max_hands]
 			@name = opts[:name]
+      @record_games = opts[:record_games]
 
 			self.current_player = 0
 
@@ -147,7 +149,6 @@ class Merlion
 		# Starts a new hand, resetting the state and pots, and commits the blinds
 		def start_hand
 			add_players_to_seats
-			debug("Considering starting hand: #{num_seated_players} #{min_players}")
 			return unless have_enough_players?
 			unless self.dealer
 				self.dealer = get_first_dealer
@@ -216,6 +217,7 @@ class Merlion
 			else
 				return
 			end
+      info(inspect)
 		end
 
 		# Clone this object, but clone the players too
@@ -247,8 +249,16 @@ class Merlion
 		end
 
 		def inspect
-			"#{stage.to_s.upcase.cyan} [#{render_cards(board_str)}] [#{pot}/#{current_bet} bet]"
+			"#{stage.to_s.upcase.cyan} [#{render_cards(board_str)}] [#{pot}/#{current_bet} bet] " + 
+      players.each.map{|p| "[#{p.name}:#{render_cards(p.hole_cards)}]"}.join(' ')
 		end
+
+    def inspect_full
+      inspect + "\n" +
+        players.each.map do |p|
+          "  #{p.name}: #{p.hole_cards}"
+        end.join("\n")
+    end
 
 		# Prints the current state of the table
 		def print_players
@@ -511,7 +521,9 @@ class Merlion
 				winners.push([winner, self.pot])
 			else
 				winp = active_players.select{|p| !p.hole_cards.empty?}.group_by{|p| pe.score_hand(p.hole_str, board_str)}
-				winp = winp.max.last
+				winp = winp.max
+        return winners if winp.nil?
+        winp = winp.last
 				give_each = self.pot / winp.size
 				winners = winp.map{|w| [w, give_each]}
 			end
@@ -519,6 +531,9 @@ class Merlion
 			winners.each do |w|
 				w[0].stack += w[1]
 			end
+      winners.each do |w|
+        info "#{w[0].name} wins $#{w[1]} with #{w[0].hand_type}".light_white
+      end
 			winners
 		end
 
@@ -563,6 +578,7 @@ class Merlion
 		# Record the game in the database. Saves the cards, player names, seats and amounts won
 		# Should be enough to calculate a high score table, but also replay the games if needed
 		def record_hand_history
+      return unless record_games
 			db.transaction do |db|
 				actions = flat_history
 				db.execute('insert into games(dealer, actions, small_blind, big_blind,

@@ -41,7 +41,9 @@ class Merlion
 			end
 
 			def hand_finished
-				determine_winners
+				determine_winners.each do |w|
+          #puts "[SIMUL] #{w[0].name} wins $#{w[1]} with #{w[0].hand_type}".light_white
+        end
 				finalize_hand
 			end
 
@@ -69,7 +71,8 @@ class Merlion
 
 				unless tot > 0
 					cards = probs.shuffle.first
-					return pe.mask_to_str(cards[0])
+					card_str = pe.mask_to_str(cards[0])
+          return card_str
 				end
 
 				rnd = Random.rand(tot)
@@ -123,6 +126,11 @@ class Merlion
 			end
 			def hand_started
 			end
+
+      def info(*args)
+      end
+      def debug(*args)
+      end
 		end
 	end
 end

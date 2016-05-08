@@ -190,6 +190,10 @@ class Merlion
 			end
 		end
 
+    def can_check?
+      to_call == 0
+    end
+
 		# Calls the current bet, whatever the size
 		def call
 			if to_call == 0

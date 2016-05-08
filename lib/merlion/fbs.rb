@@ -1,7 +1,6 @@
 class Merlion
 	# A class to keep simple formula-based betting strategies
 	class FBS
-
 		# Predict a move using effective hand strength and potential
 		def get_move_ehs(player, ehs)
 			game = player.game
