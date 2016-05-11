@@ -211,6 +211,11 @@ class Merlion
 			@last_action = :fold
 		end
 
+    def can_raise?
+      return false if game.bets_this_round == 4
+      return to_call > 0
+    end
+
 		# Raises by the amount given, or by the minimum bet
 		def bet_raise (amount = nil)
 			unless amount
@@ -318,6 +323,10 @@ class Merlion
 		# Called whenever a player has taken a turn
 		def player_moved
 		end
+
+		# Called when a player is taking a turn but before the board state changes
+    def player_moving(*args)
+    end
 
 		# A callback for when the state has changed
 		def state_changed

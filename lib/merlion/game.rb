@@ -313,6 +313,7 @@ class Merlion
 		# Also calls the 'state_changed' callback
 		def process_move(action, *args)
 			return if !player_to_act
+      player_moving(action.to_sym)
 			player_to_act.send(action.to_sym, *args)
 			player_finished
 			state_changed
@@ -479,6 +480,34 @@ class Merlion
 			return nil unless last_player_to_act
 			players[last_player_to_act]
 		end
+
+    # Called when a player is moving
+    def player_moving(action)
+      action = case action
+               when :check_or_fold
+                 if player_to_act.can_check?
+                   :check
+                 else
+                   :fold
+                 end
+               when :bet_raise
+                 if player_to_act.can_raise?
+                   :raise
+                 else
+                   :bet
+                 end
+              when :call
+                if player_to_act.can_check?
+                  :check
+                else
+                  :call
+                end
+              else
+                action
+              end
+			# Send each player an event notification
+			send_each_player(:player_moving, action)
+    end
 
 		# Called after a player has finished acting. May change the stage or end
 		# the hand if necessary, otherwise changes to next player

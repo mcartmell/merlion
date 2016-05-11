@@ -119,9 +119,9 @@ class Merlion
 
 			# Sends each player an event notification, but does so as a deferred job
 			# so they don't block. Only return when all jobs have completed
-			def send_each_player(sym)
+			def send_each_player(sym, *args)
 				players.each do |p|
-					defer { p.send(sym) }
+					defer { p.send(sym, *args) }
 				end
 				Fiber.yield
 			end
