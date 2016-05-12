@@ -9,6 +9,7 @@ class Merlion
 			def initialize(*a)
 				super
 				@wt_cache = {}
+        @ehs_cache = {}
 			end
 
 			def self.from_game_state(gs)
@@ -26,10 +27,10 @@ class Merlion
 				end
 			end
 
-			def randomize_cards(hero_seat, weight_tables)
+			def randomize_cards(hero_seat, weight_tables, opts={})
 				players.each do |p|
 					next if p.seat == hero_seat
-					p.hole_cards = get_representative_hand(weight_tables[p.seat])
+					p.hole_cards = get_representative_hand(weight_tables[p.seat], opts)
 				end
 			end
 
@@ -47,15 +48,29 @@ class Merlion
 				finalize_hand
 			end
 
-			def get_representative_hand(wt)
+			def get_representative_hand(wt, opts)
 				wtprobs = wt_cache[wt.object_id]
 
 				unless wtprobs
+          wt_sorted = if opts[:sorted]
+            # sort by best hands
+            wt.each.sort_by do |k, v|
+              # cache the ehs of these cards on this board
+              @ehs_cache["#{k}-#{board_str}"] ||= pe.str_to_hs(pe.mask_to_str(k), board_str)
+            end.drop(wt.size * config.simulation_fear)
+          else
+            wt.sort.drop(wt.size * config.simulation_fear)
+          end
+
+          puts "most likely hands:" + (wt_sorted.sort_by{|e| e[1]}.reverse.take(10).map do |k, v|
+            pe.mask_to_str(k) + "(#{v.round(2)})"
+          end.join(", "))
+          puts "actual best hands:" + (wt_sorted.reverse.take(10).map do |k, v|
+            pe.mask_to_str(k) + "(#{v.round(2)})"
+          end.join(", "))
+
 					# sort by most likely hands
-          # wt_sorted = wt.sort.drop(wt.size * config.simulation_fear)
-          # sort by best hands
-          wt_sorted = wt.each.sort_by{|k, v| pe.effective_hand_strength(pe.mask_to_str(k), board_str)[:ehs]}
-          wt_sorted = wt_sorted.drop(wt.size * config.simulation_fear)
+          #wt_sorted = wt_sorted.drop(wt.size * config.simulation_fear)
 					tot = 0.0
 					probs = []
 					wt_sorted.each do |k, v|
